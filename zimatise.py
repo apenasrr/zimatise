@@ -52,6 +52,7 @@ from timestamp_link_maker import timestamp_link_maker
 import telegram_filesender
 import zipind
 
+
 def ensure_folder_existence(folders_path):
     """
     :input: folders_path: List
@@ -61,6 +62,7 @@ def ensure_folder_existence(folders_path):
         existence = os.path.isdir(folder_path)
         if existence is False:
             os.mkdir(folder_path)
+
 
 def get_path_folder_output():
 
@@ -84,8 +86,11 @@ def get_txt_content(file_path):
 def get_txt_folder_origin():
     
     file_folder_name = 'folder_files_origin.txt'
-    
+    if os.path.exists(file_folder_name) is False:
+        open(file_folder_name, 'a').close()
+
     return file_folder_name
+
 
 def get_name_dir_origin():
 
@@ -141,6 +146,12 @@ def get_start_index_output():
     
     return start_index_output
 
+
+def play_sound():
+
+    path_file_sound = ''
+    os.system(f'start wmplayer "{path_file_sound}"') 
+    
     
 def main():
     """
@@ -197,9 +208,12 @@ def main():
         # reencode videos mark in column video_resolution_to_change
         mass_videojoin.set_make_reencode(path_file_report)
         
+        # play_sound()
+        
         break_point = input('Review the file and then type something to ' + \
                             'continue.')
         mass_videojoin.clean_cmd()
+        
         main()
         return
     elif menu_answer == 4:
@@ -217,13 +231,24 @@ def main():
         mass_videojoin.set_split_videos(path_file_report, mb_limit)
         
         # start_index_output
-        start_index_output = get_start_index_output()
-        
+        # start_index_output = get_start_index_output()
+
+        print('Start hashtag index count with what value?')
+        start_index_number = input('(None for 1) Answer: ')
+        if start_index_number == '':
+            start_index_number = 1
+        else:
+            start_index_number = int(start_index_number)
+            
         # join all videos
         mass_videojoin.set_join_videos(path_file_report, mb_limit, 
-                                       start_index_output)
+                                       start_index_output=start_index_number)
+        
+        # play_sound()
         break_point = input('')        
         mass_videojoin.clean_cmd()
+        
+        
         main()
         return
     elif menu_answer == 5:
