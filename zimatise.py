@@ -35,17 +35,39 @@
 
 import sys
 import os 
+import logging
 
 
 def add_path_script_folders(list_folders_name):
 
+    list_repo_dont_found = []
     for folder_name in list_folders_name:
         path_script_folder = os.path.abspath(os.path.join('..', folder_name))
-        sys.path.append(path_script_folder)
+        existence = os.path.isdir(path_script_folder)
+        if existence is False:
+            list_repo_dont_found.append(path_script_folder)
+        else:
+            sys.path.append(path_script_folder)
+    
+    # alert in case of not found repositories
+    qt_not_found = len(list_repo_dont_found)
+    if qt_not_found != 0:
+        if qt_not_found > 1:
+            repo = 'repositories'
+        else:
+            repo = 'repository'
+        str_list_repo_dont_found = '\n'.join(list_repo_dont_found)
+        logging.error(f'The {repo} below could not be found. ' + \
+                      f'Make sure it exists with the proper folder ' + \
+                      f'name.\n{str_list_repo_dont_found}\n')
+        exit()
+
+
 
 list_folders_name = ['Zipind', 'mass_videojoin', 'timestamp_link_maker', 
                      'Telegram_filesender']
 add_path_script_folders(list_folders_name)
+
 
 import mass_videojoin
 from timestamp_link_maker import timestamp_link_maker
@@ -53,6 +75,22 @@ import telegram_filesender
 import zipind
 
 
+def logging_config():
+
+    logfilename = 'log-' + 'mass_videojoin' + '.txt'
+    logging.basicConfig(filename=logfilename, level=logging.DEBUG,
+                        format=' %(asctime)s-%(levelname)s-%(message)s')
+    # set up logging to console
+    console = logging.StreamHandler()
+    console.setLevel(logging.INFO)
+    # set a format which is simpler for console use
+    formatter = logging.Formatter(' %(asctime)s-%(levelname)s-%(message)s')
+    console.setFormatter(formatter)
+    # add the handler to the root logger
+    logging.getLogger('').addHandler(console)
+    logger = logging.getLogger(__name__)
+    
+    
 def ensure_folder_existence(folders_path):
     """
     :input: folders_path: List
@@ -233,12 +271,24 @@ def main():
         # start_index_output
         # start_index_output = get_start_index_output()
 
-        print('Start hashtag index count with what value?')
-        start_index_number = input('(None for 1) Answer: ')
-        if start_index_number == '':
-            start_index_number = 1
-        else:
-            start_index_number = int(start_index_number)
+        
+        # start_index_number = input('(None for 1) Answer: ')
+        def get_start_index_number():
+
+            while True:
+                print('Start hashtag index count with what value?')
+                start_index_number = input('(None for 1) Answer: ')
+                if start_index_number == '':
+                    start_index_number = 1
+                    return start_index_number
+                else:
+                    if start_index_number.isdigit():
+                        start_index_number = int(start_index_number)
+                        return start_index_number
+                    else:
+                        pass
+        start_index_number = get_start_index_number()
+        
             
         # join all videos
         mass_videojoin.set_join_videos(path_file_report, mb_limit, 
@@ -281,4 +331,5 @@ def main():
 
 
 if __name__ == "__main__":
+    logging_config()
     main()
