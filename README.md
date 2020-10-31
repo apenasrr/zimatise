@@ -16,7 +16,7 @@ to transform, for example:
 -20 GB of hundreds of videos and files  
 
 into an:  
--elegant playlist with 8 videos with 2 gb each  
+-elegant playlist with 8 videos, 2 gb each and interactive timestamps  
 -2 independent zipped files and dynamic summary by topics  
 -ready to watch and share on Telegram  
 
@@ -28,11 +28,7 @@ and highly customizable
 -https://github.com/apenasrr/mass_videojoin  
 -https://github.com/apenasrr/timestamp_link_maker  
 -https://github.com/apenasrr/telegram_filesender  
--lib natsort  
--lib pyperclip  
--lib pyautogui  
--lib pandas  
--lib unidecode  
+
 
 ## How to use  
 -Place the folder of the 4 required repositories and this repository in the same location. Then there must be 5 folders in the same location  
@@ -40,7 +36,7 @@ and highly customizable
 -Follow the on-screen instructions  
 -For more details, check the documentation for the required repositories  
 
-Last_update: 2020-08-20  
+Last_update: 2020-10-31  
 
 ---
 Do you wish to buy a coffee to say thanks?  
@@ -50,3 +46,4 @@ LBC (from LBRY) digital Wallet
 ### We recommend:  
 [mises.org](https://mises.org/) - Educate yourself about economic and political freedom  
 [lbry.tv](http://lbry.tv/) - Store files and videos on blockchain ensuring free speech  
+[A Cypherpunk's Manifesto](https://www.activism.net/cypherpunk/manifesto.html) - How encryption is essential to Free Speech and Privacy  
