@@ -1,0 +1,5 @@
+pandas
+natsort
+unidecode
+pyperclip
+pyautogui
