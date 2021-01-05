@@ -188,6 +188,22 @@ def play_sound():
     os.system(f'start wmplayer "{path_file_sound}"')
 
 
+def get_start_index_number():
+
+    while True:
+        print('Start hashtag index count with what value?')
+        start_index_number = input('(None for 1) Answer: ')
+        if start_index_number == '':
+            start_index_number = 1
+            return start_index_number
+        else:
+            if start_index_number.isdigit():
+                start_index_number = int(start_index_number)
+                return start_index_number
+            else:
+                pass
+
+
 def main():
     """
     How to use
@@ -206,6 +222,8 @@ def main():
     path_file_report = mass_videojoin.set_path_file_report()
 
     menu_answer = menu_ask()
+
+    # 1-Create independent Zip parts for not_video_files
     if menu_answer == 1:
         # Zip not video files
         path_dir = input('\nPaste the folder link where are the video files: ')
@@ -225,8 +243,9 @@ def main():
         main()
         return
 
+    # 2-Generate worksheet listing the files
+    # create Dataframe of video details
     elif menu_answer == 2:
-        # create Dataframe of video details
         path_dir = input('\nPaste the folder link where are the video files: ')
         # save in txt, the folder name
         mass_videojoin.save_upload_folder_name(path_dir, folder_files_origin)
@@ -243,22 +262,31 @@ def main():
         main()
         return
 
+    # '3-Process reencode of videos marked in column ' +
+    #  '"video_resolution_to_change"')
+    # reencode videos mark in column video_resolution_to_change
     elif menu_answer == 3:
-        # reencode videos mark in column video_resolution_to_change
         mass_videojoin.set_make_reencode(path_file_report)
 
         # play_sound()
 
         # break_point
-        input('Review the file and then type something to continue.')
+        input('type something to start correcting the duration metadata...')
+        mass_videojoin.set_correct_duration(path_file_report)
+
+        # break_point
+        input('Review the file and then type something ' +
+              'to go to the main menu.')
         mass_videojoin.clean_cmd()
 
         main()
         return
 
+    # '4-Group videos with the same codec and resolution')
+    # join videos
     elif menu_answer == 4:
-        # join videos
         mb_limit = int(mass_videojoin.userpref_size_per_file_mb())
+        duration_limit = mass_videojoin.get_duration_limit()
 
         # establishes separation criteria for the join videos step
         mass_videojoin.set_group_column(path_file_report)
@@ -269,31 +297,14 @@ def main():
               'are too big and should be splitted')
 
         # split videos too big
-        mass_videojoin.set_split_videos(path_file_report, mb_limit)
+        mass_videojoin.set_split_videos(path_file_report, mb_limit,
+                                        duration_limit)
 
-        # start_index_output
-        # start_index_output = get_start_index_output()
-
-        # start_index_number = input('(None for 1) Answer: ')
-
-        def get_start_index_number():
-
-            while True:
-                print('Start hashtag index count with what value?')
-                start_index_number = input('(None for 1) Answer: ')
-                if start_index_number == '':
-                    start_index_number = 1
-                    return start_index_number
-                else:
-                    if start_index_number.isdigit():
-                        start_index_number = int(start_index_number)
-                        return start_index_number
-                    else:
-                        pass
         start_index_number = get_start_index_number()
 
         # join all videos
         mass_videojoin.set_join_videos(path_file_report, mb_limit,
+                                       duration_limit,
                                        start_index_output=start_index_number)
 
         # play_sound()
@@ -304,6 +315,7 @@ def main():
         main()
         return
 
+    # '5-Make Timestamps and Descriptions report')
     elif menu_answer == 5:
         # timestamp maker
         path_folder_output = get_path_folder_output()
@@ -324,6 +336,7 @@ def main():
         main()
         return
 
+    # '6-Auto-send to Telegram')
     elif menu_answer == 6:
         # file sender
         path_folder_output = get_path_folder_output()
