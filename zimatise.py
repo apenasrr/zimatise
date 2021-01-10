@@ -37,6 +37,8 @@
 import logging
 import os
 import sys
+import utils
+from header_maker import header_maker
 
 try:
     import mass_videojoin
@@ -94,49 +96,6 @@ def logging_config():
     logging.getLogger('').addHandler(console)
 
 
-def ensure_folder_existence(folders_path):
-    """
-    :input: folders_path: List
-    """
-
-    for folder_path in folders_path:
-        existence = os.path.isdir(folder_path)
-        if existence is False:
-            os.mkdir(folder_path)
-
-
-def get_path_folder_output():
-
-    path_folder_origin = get_name_dir_origin()
-    path_folder_output = 'output_' + path_folder_origin
-    ensure_folder_existence([path_folder_output])
-    return path_folder_output
-
-
-def get_txt_content(file_path):
-
-    file = open(file_path, 'r', encoding='utf-8')
-    file_content = file.readlines()
-    file_content = ''.join(file_content)
-    file.close()
-    return file_content
-
-
-def get_txt_folder_origin():
-
-    file_folder_name = 'folder_files_origin.txt'
-    if os.path.exists(file_folder_name) is False:
-        open(file_folder_name, 'a').close()
-    return file_folder_name
-
-
-def get_name_dir_origin():
-
-    name_file_folder_name = get_txt_folder_origin()
-    dir_name_saved = get_txt_content(name_file_folder_name)
-    return dir_name_saved
-
-
 def menu_ask():
 
     print('1-Create independent Zip parts for not_video_files')
@@ -175,7 +134,7 @@ def get_how_many_files_in_folder(path_folder):
 
 def get_start_index_output():
 
-    path_folder_output_files = os.path.join(get_path_folder_output(),
+    path_folder_output_files = os.path.join(utils.get_path_folder_output(),
                                             'output_videos')
     count_files = get_how_many_files_in_folder(path_folder_output_files)
     start_index_output = count_files + 1
@@ -216,7 +175,7 @@ def main():
     """
 
     mass_videojoin.ensure_folders_existence()
-    folder_files_origin = get_txt_folder_origin()
+    folder_files_origin = utils.get_txt_folder_origin()
 
     # get path_file of video_details.xlsx
     path_file_report = mass_videojoin.set_path_file_report()
@@ -231,9 +190,9 @@ def main():
 
         mb_limit = int(mass_videojoin.userpref_size_per_file_mb())
 
-        path_folder_output = os.path.join(get_path_folder_output(),
+        path_folder_output = os.path.join(utils.get_path_folder_output(),
                                           'output_videos')
-        ensure_folder_existence([path_folder_output])
+        utils.ensure_folder_existence([path_folder_output])
         zipind.zipind(path_dir=path_dir, mb_per_file=mb_limit,
                       path_dir_output=path_folder_output)
         # break_point
@@ -275,8 +234,9 @@ def main():
         mass_videojoin.set_correct_duration(path_file_report)
 
         # break_point
-        input('Review the file and then type something ' +
-              'to go to the main menu.')
+        input('Duration metadata corrected.\n' +
+              'Type something to go to the main menu, ' +
+              'and proceed to the "Group videos" process.')
         mass_videojoin.clean_cmd()
 
         main()
@@ -285,7 +245,12 @@ def main():
     # '4-Group videos with the same codec and resolution')
     # join videos
     elif menu_answer == 4:
+
+        # ask start_index_number to user
+        start_index_number = get_start_index_number()
+
         mb_limit = int(mass_videojoin.userpref_size_per_file_mb())
+
         duration_limit = mass_videojoin.get_duration_limit()
 
         # establishes separation criteria for the join videos step
@@ -300,7 +265,6 @@ def main():
         mass_videojoin.set_split_videos(path_file_report, mb_limit,
                                         duration_limit)
 
-        start_index_number = get_start_index_number()
 
         # join all videos
         mass_videojoin.set_join_videos(path_file_report, mb_limit,
@@ -318,7 +282,7 @@ def main():
     # '5-Make Timestamps and Descriptions report')
     elif menu_answer == 5:
         # timestamp maker
-        path_folder_output = get_path_folder_output()
+        path_folder_output = utils.get_path_folder_output()
 
         print('Start hashtag index count with what value?')
         start_index_number = input('(None for 1) Answer: ')
@@ -331,7 +295,10 @@ def main():
                              file_path_report_origin=path_file_report,
                              start_index_number=start_index_number)
         # break_point
-        input('TimeStamp and descriptions files created')
+        input('\nTimeStamp and descriptions files created')
+
+        header_maker()
+        input('\nType something to go to the main menu')
         mass_videojoin.clean_cmd()
         main()
         return
@@ -339,7 +306,7 @@ def main():
     # '6-Auto-send to Telegram')
     elif menu_answer == 6:
         # file sender
-        path_folder_output = get_path_folder_output()
+        path_folder_output = utils.get_path_folder_output()
         telegram_filesender.main(folder_path_descriptions=path_folder_output)
 
         # break_point

@@ -1,0 +1,2 @@
+python zimatise.py
+pause
