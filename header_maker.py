@@ -76,6 +76,12 @@ def get_serie_name_project(df_folder):
             name_col = df_folder.columns[n_col - 1]
             serie_name_project = df_folder[name_col]
             return serie_name_project
+    # If you do not find a column with variable values,
+    #  it is because the project has no subfolders.
+    # Thus, the extraction of the folder name must be
+    #  through the last column in the dataframe
+    serie_name_project = df_folder.iloc[:, len_cols - 1]
+    return serie_name_project
 
 
 def get_project_name(df):
@@ -103,7 +109,7 @@ def header_maker():
 
     # main variables declaration
     file_name_video_details = 'video_details.xlsx'
-    path_file_template_header = 'template_header.txt'
+    path_file_template_header = 'header_template.txt'
 
     # get list of video_files reports
     path_folder_output = utils.get_path_folder_output()
@@ -123,7 +129,7 @@ def header_maker():
               'duration': duration}
 
     # load template
-    file_path = os.path.join(path_folder_output, 'txt')
+    file_path = os.path.join(path_folder_output, 'header_project.txt')
     template_content = \
         utils.get_txt_content(file_path=path_file_template_header)
 

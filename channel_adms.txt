@@ -1,0 +1,4 @@
+# bellow this line, list one user_name (@user_telegram) per line
+# like this:
+# @someadminaccount
+# @anotheradminaccount

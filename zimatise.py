@@ -43,7 +43,7 @@ from header_maker import header_maker
 try:
     import mass_videojoin
     from timestamp_link_maker import timestamp_link_maker
-    import telegram_filesender
+    import telegram_filesender, config_data
     import zipind
 
 except:
@@ -77,15 +77,17 @@ except:
     add_path_script_folders(list_folders_name)
     import mass_videojoin
     from timestamp_link_maker import timestamp_link_maker
-    import telegram_filesender
+    import telegram_filesender, config_data
     import zipind
 
 
 def logging_config():
 
     logfilename = 'log-' + 'zimatise' + '.txt'
-    logging.basicConfig(filename=logfilename, level=logging.DEBUG,
-                        format=' %(asctime)s-%(levelname)s-%(message)s')
+    logging.basicConfig(
+        level=logging.DEBUG,
+        format=' %(asctime)s-%(levelname)s-%(message)s',
+        handlers=[logging.FileHandler(logfilename, 'w', 'utf-8')])
     # set up logging to console
     console = logging.StreamHandler()
     console.setLevel(logging.INFO)
@@ -230,7 +232,7 @@ def main():
         # play_sound()
 
         # break_point
-        input('type something to start correcting the duration metadata...')
+        # input('type something to start correcting the duration metadata...')
         mass_videojoin.set_correct_duration(path_file_report)
 
         # break_point
@@ -307,7 +309,12 @@ def main():
     elif menu_answer == 6:
         # file sender
         path_folder_output = utils.get_path_folder_output()
-        telegram_filesender.main(folder_path_descriptions=path_folder_output)
+        #  Generate config_data dictionary
+        dict_config = config_data.config_data()
+        print(f'\nProject: {path_folder_output}\n')
+
+        telegram_filesender.main(folder_path_descriptions=path_folder_output,
+                                 dict_config=dict_config)
 
         # break_point
         input('All files were sent to the telegram')
