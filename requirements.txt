@@ -4,3 +4,4 @@ natsort
 unidecode
 pyperclip
 pyautogui
+tgcrypto
