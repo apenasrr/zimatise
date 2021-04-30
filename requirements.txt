@@ -5,3 +5,4 @@ unidecode
 pyperclip
 pyautogui
 tgcrypto
+openpyxl
