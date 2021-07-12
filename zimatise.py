@@ -44,7 +44,7 @@ try:
     import mass_videojoin
     from timestamp_link_maker import timestamp_link_maker
     import telegram_filesender, config_data
-    import zipind
+    import zipind, zipind_core
 
 except:
     def add_path_script_folders(list_folders_name):
@@ -78,7 +78,7 @@ except:
     import mass_videojoin
     from timestamp_link_maker import timestamp_link_maker
     import telegram_filesender, config_data
-    import zipind
+    import zipind, zipind_core
 
 
 def logging_config():
@@ -124,7 +124,7 @@ def menu_ask():
         return 6
     else:
         msg_invalid_option = "Invalid option"
-        raise MyValidationError(msg_invalid_option)
+        raise msg_invalid_option
 
 
 def get_how_many_files_in_folder(path_folder):
@@ -165,6 +165,30 @@ def get_start_index_number():
                 pass
 
 
+def get_folder_script_path():
+
+    folder_script_path_relative = os.path.dirname(__file__)
+    folder_script_path = os.path.realpath(folder_script_path_relative)
+
+    return folder_script_path
+
+
+def define_mb_per_file(path_file_config, file_size_limit_mb):
+
+    if file_size_limit_mb is not None:
+        repeat_size = input(f'Define limit of {file_size_limit_mb} ' +
+                            'MB per file? y/n\n')
+        if repeat_size == 'n':
+            file_size_limit_mb = zipind.ask_mb_file()
+            zipind.config_update_data(path_file_config, 'file_size_limit_mb',
+                                      str(file_size_limit_mb))
+    else:
+        file_size_limit_mb = zipind.ask_mb_file()
+        zipind.config_update_data(path_file_config, 'file_size_limit_mb',
+                                  str(file_size_limit_mb))
+    return file_size_limit_mb
+
+
 def main():
     """
     How to use
@@ -182,21 +206,42 @@ def main():
     # get path_file of video_details.xlsx
     path_file_report = mass_videojoin.set_path_file_report()
 
+    folder_script_path = get_folder_script_path()
+    path_file_config = os.path.join(folder_script_path, 'config.ini')
+    config = utils.get_config_data(path_file_config)
+    file_size_limit_mb = int(config['file_size_limit_mb'])
+    mode = config['mode']
+    max_path = int(config['max_path'])
+    list_video_extensions = config['video_extensions'].split(',')
+
     menu_answer = menu_ask()
 
     # 1-Create independent Zip parts for not_video_files
     if menu_answer == 1:
         # Zip not video files
         path_dir = input('\nPaste the folder link where are the video files: ')
+        if os.path.isdir(path_dir) is False:
+            input('\nThe folder does not exist.')
+            mass_videojoin.clean_cmd()
+            main()
+            return
         mass_videojoin.save_upload_folder_name(path_dir, folder_files_origin)
 
-        mb_limit = int(mass_videojoin.userpref_size_per_file_mb())
+        file_size_limit_mb = define_mb_per_file(path_file_config,
+                                                file_size_limit_mb)
+
+        if zipind.ensure_folder_sanatize(path_dir, max_path) is False:
+            mass_videojoin.clean_cmd()
+            main()
+            return
 
         path_folder_output = os.path.join(utils.get_path_folder_output(),
                                           'output_videos')
         utils.ensure_folder_existence([path_folder_output])
-        zipind.zipind(path_dir=path_dir, mb_per_file=mb_limit,
-                      path_dir_output=path_folder_output)
+        zipind_core.zipind(path_dir=path_dir, mb_per_file=file_size_limit_mb,
+                           path_dir_output=path_folder_output,
+                           mode=mode,
+                           ignore_extensions=list_video_extensions)
         # break_point
         input('Zip files created.')
 

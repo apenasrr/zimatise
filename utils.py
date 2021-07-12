@@ -1,4 +1,18 @@
 import os
+from configparser import ConfigParser
+
+
+def get_config_data(path_file_config):
+    """get default configuration data from file config.ini
+
+    Returns:
+        dict: config data
+    """
+
+    config_file = ConfigParser()
+    config_file.read(path_file_config)
+    default_config = dict(config_file['default'])
+    return default_config
 
 
 def ensure_folder_existence(folders_path):
