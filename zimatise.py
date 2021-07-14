@@ -206,6 +206,7 @@ def main():
     # get path_file of video_details.xlsx
     path_file_report = mass_videojoin.set_path_file_report()
 
+    # get config data
     folder_script_path = get_folder_script_path()
     path_file_config = os.path.join(folder_script_path, 'config.ini')
     config = utils.get_config_data(path_file_config)
@@ -213,6 +214,8 @@ def main():
     mode = config['mode']
     max_path = int(config['max_path'])
     list_video_extensions = config['video_extensions'].split(',')
+    duration_limit = config['duration_limit']
+    activate_transition = config['activate_transition']
 
     menu_answer = menu_ask()
 
@@ -258,7 +261,8 @@ def main():
 
         path_file_report = mass_videojoin.set_path_file_report()
 
-        mass_videojoin.step_create_report_filled(path_dir, path_file_report)
+        mass_videojoin.step_create_report_filled(path_dir, path_file_report,
+                                                 list_video_extensions)
 
         print('\nIf necessary, change the reencode plan in the column ' +
               '"video_resolution_to_change"')
@@ -296,10 +300,6 @@ def main():
         # ask start_index_number to user
         start_index_number = get_start_index_number()
 
-        mb_limit = int(mass_videojoin.userpref_size_per_file_mb())
-
-        duration_limit = mass_videojoin.get_duration_limit()
-
         # establishes separation criteria for the join videos step
         mass_videojoin.set_group_column(path_file_report)
 
@@ -309,14 +309,15 @@ def main():
               'are too big and should be splitted')
 
         # split videos too big
-        mass_videojoin.set_split_videos(path_file_report, mb_limit,
+        mass_videojoin.set_split_videos(path_file_report, file_size_limit_mb,
                                         duration_limit)
 
 
         # join all videos
-        mass_videojoin.set_join_videos(path_file_report, mb_limit,
+        mass_videojoin.set_join_videos(path_file_report, file_size_limit_mb,
                                        duration_limit,
-                                       start_index_output=start_index_number)
+                                       start_index_number,
+                                       activate_transition)
 
         # play_sound()
         # break_point
