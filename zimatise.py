@@ -200,12 +200,6 @@ def main():
     Source: https://github.com/apenasrr/zimatise
     """
 
-    mass_videojoin.ensure_folders_existence()
-    folder_files_origin = utils.get_txt_folder_origin()
-
-    # get path_file of video_details.xlsx
-    path_file_report = mass_videojoin.set_path_file_report()
-
     # get config data
     folder_script_path = get_folder_script_path()
     path_file_config = os.path.join(folder_script_path, 'config.ini')
@@ -216,156 +210,201 @@ def main():
     list_video_extensions = config['video_extensions'].split(',')
     duration_limit = config['duration_limit']
     activate_transition = config['activate_transition']
+    start_index = int(config['start_index'])
+    path_file_report = None
+    path_dir = None
 
-    menu_answer = menu_ask()
+    while True:
+        menu_answer = menu_ask()
 
-    # 1-Create independent Zip parts for not_video_files
-    if menu_answer == 1:
-        # Zip not video files
-        path_dir = input('\nPaste the folder link where are the video files: ')
-        if os.path.isdir(path_dir) is False:
-            input('\nThe folder does not exist.')
+        # 1-Create independent Zip parts for not_video_files
+        if menu_answer == 1:
+            # Zip not video files
+
+            path_dir = mass_videojoin.get_path_dir(path_dir)
+            path_file_report = mass_videojoin.set_path_file_report(path_dir)
+            folder_path_output = os.path.dirname(path_file_report)
+
+            if os.path.isdir(path_dir) is False:
+                input('\nThe folder does not exist.')
+                mass_videojoin.clean_cmd()
+                continue
+
+            file_size_limit_mb = define_mb_per_file(path_file_config,
+                                                    file_size_limit_mb)
+
+            if zipind.ensure_folder_sanatize(path_dir, max_path) is False:
+                mass_videojoin.clean_cmd()
+                continue
+
+            path_folder_output = os.path.join(folder_path_output,
+                                              'output_videos')
+            utils.ensure_folder_existence([path_folder_output])
+            zipind_core.zipind(path_dir=path_dir,
+                               mb_per_file=file_size_limit_mb,
+                               path_dir_output=path_folder_output,
+                               mode=mode,
+                               ignore_extensions=list_video_extensions)
+            # break_point
+            input('\nZip files created.')
+
             mass_videojoin.clean_cmd()
-            main()
-            return
-        mass_videojoin.save_upload_folder_name(path_dir, folder_files_origin)
+            continue
 
-        file_size_limit_mb = define_mb_per_file(path_file_config,
-                                                file_size_limit_mb)
+        # 2-Generate worksheet listing the files
+        # create Dataframe of video details
+        elif menu_answer == 2:
 
-        if zipind.ensure_folder_sanatize(path_dir, max_path) is False:
+            path_dir = mass_videojoin.get_path_dir(path_dir)
+            path_file_report = mass_videojoin.set_path_file_report(path_dir)
+
+            mass_videojoin.step_create_report_filled(path_dir,
+                                                     path_file_report,
+                                                     list_video_extensions)
+
+            print('\nIf necessary, change the reencode plan in the column ' +
+                  '"video_resolution_to_change"')
+
+            # break_point
+            input('Type Enter to continue')
+
             mass_videojoin.clean_cmd()
-            main()
+            continue
+
+        # 3-reencode videos and recheck duration
+        #       -reencode videos mark in column video_resolution_to_change
+        #       -recheck to correct duration metadata
+        elif menu_answer == 3:
+
+            # define variables
+            path_dir = mass_videojoin.get_path_dir(path_dir)
+            path_file_report = mass_videojoin.set_path_file_report(path_dir)
+            path_folder_videos_encoded = \
+                mass_videojoin.set_path_folder_videos_encoded(path_dir)
+            mass_videojoin.ensure_folder_existence([path_folder_videos_encoded])
+
+            # reencode videos mark in column video_resolution_to_change
+            mass_videojoin.set_make_reencode(path_file_report,
+                                             path_folder_videos_encoded)
+
+            # play_sound()
+
+            # correct videos duration
+            print('start correcting the duration metadata')
+            mass_videojoin.set_correct_duration(path_file_report)
+
+            # break_point
+            input('Duration metadata corrected.\n' +
+                  'Type something to go to the main menu, ' +
+                  'and proceed to the "Group videos" process.')
+
+            mass_videojoin.clean_cmd()
+            continue
+
+        # 4-join videos
+        #       -Group videos with the same codec and resolution')
+        elif menu_answer == 4:
+
+            # define variables
+            path_dir = mass_videojoin.get_path_dir(path_dir)
+            path_file_report = mass_videojoin.set_path_file_report(path_dir)
+
+            path_folder_videos_splitted = \
+                mass_videojoin.set_path_folder_videos_splitted(path_dir)
+            mass_videojoin.ensure_folder_existence([path_folder_videos_splitted])
+
+            path_folder_videos_joined = \
+                mass_videojoin.set_path_folder_videos_joined(path_dir)
+            mass_videojoin.ensure_folder_existence([path_folder_videos_joined])
+
+            filename_output = \
+                mass_videojoin.get_folder_name_normalized(path_dir)
+
+            path_folder_videos_cache = \
+                mass_videojoin.set_path_folder_videos_cache(path_dir)
+            mass_videojoin.ensure_folder_existence([path_folder_videos_cache])
+
+            # Fill group_column.
+            #  Establishes separation criteria for the join videos step
+            mass_videojoin.set_group_column(path_file_report)
+
+            # break_point
+            input('Review the file and then type something to ' +
+                  'start the process that look for videos that ' +
+                  'are too big and should be splitted')
+
+            # split videos too big
+            mass_videojoin.set_split_videos(path_file_report,
+                                            file_size_limit_mb,
+                                            path_folder_videos_splitted,
+                                            duration_limit)
+
+
+            # join all videos
+            mass_videojoin.set_join_videos(path_file_report,
+                                           file_size_limit_mb,
+                                           filename_output,
+                                           path_folder_videos_joined,
+                                           path_folder_videos_cache,
+                                           duration_limit,
+                                           start_index,
+                                           activate_transition)
+
+            # play_sound()
+
+            # break_point
+            input('\nAll videos were grouped. ' +
+                  'Go to the "Make Time Stamps" step.')
+
+            mass_videojoin.clean_cmd()
+            continue
+
+        # '5-Make Timestamps and Descriptions report')
+        elif menu_answer == 5:
+            # timestamp maker
+
+            # define variables
+            path_dir = mass_videojoin.get_path_dir(path_dir)
+            path_file_report = mass_videojoin.set_path_file_report(path_dir)
+            folder_path_output = os.path.dirname(path_file_report)
+
+            # make descriptions.xlsx and summary.txt
+            timestamp_link_maker(folder_path_output=folder_path_output,
+                                 file_path_report_origin=path_file_report,
+                                 start_index_number=start_index)
+            # break_point
+            input('\nTimeStamp and descriptions files created')
+
+            # make header project
+            header_maker(folder_path_output)
+
+            # break point
+            input('\nType something to go to the main menu')
+
+            mass_videojoin.clean_cmd()
+            continue
+
+        # '6-Auto-send to Telegram')
+        elif menu_answer == 6:
+            # file sender
+
+            # define variables
+            path_dir = mass_videojoin.get_path_dir(path_dir)
+            path_file_report = mass_videojoin.set_path_file_report(path_dir)
+            folder_path_output = os.path.dirname(path_file_report)
+
+            # Generate config_data dictionary from config_data
+            #  in repo telegram_filesender
+            dict_config = config_data.config_data()
+            print(f'\nProject: {folder_path_output}\n')
+
+            telegram_filesender.main(folder_path_output,
+                                     dict_config=dict_config)
+
+            # break_point
+            input('All files were sent to the telegram')
+            mass_videojoin.clean_cmd()
             return
-
-        path_folder_output = os.path.join(utils.get_path_folder_output(),
-                                          'output_videos')
-        utils.ensure_folder_existence([path_folder_output])
-        zipind_core.zipind(path_dir=path_dir, mb_per_file=file_size_limit_mb,
-                           path_dir_output=path_folder_output,
-                           mode=mode,
-                           ignore_extensions=list_video_extensions)
-        # break_point
-        input('Zip files created.')
-
-        mass_videojoin.clean_cmd()
-        main()
-        return
-
-    # 2-Generate worksheet listing the files
-    # create Dataframe of video details
-    elif menu_answer == 2:
-        path_dir = input('\nPaste the folder link where are the video files: ')
-        # save in txt, the folder name
-        mass_videojoin.save_upload_folder_name(path_dir, folder_files_origin)
-
-        path_file_report = mass_videojoin.set_path_file_report()
-
-        mass_videojoin.step_create_report_filled(path_dir, path_file_report,
-                                                 list_video_extensions)
-
-        print('\nIf necessary, change the reencode plan in the column ' +
-              '"video_resolution_to_change"')
-        # break_point
-        input('Type Enter to continue')
-        mass_videojoin.clean_cmd()
-        main()
-        return
-
-    # '3-Process reencode of videos marked in column ' +
-    #  '"video_resolution_to_change"')
-    # reencode videos mark in column video_resolution_to_change
-    elif menu_answer == 3:
-        mass_videojoin.set_make_reencode(path_file_report)
-
-        # play_sound()
-
-        # break_point
-        # input('type something to start correcting the duration metadata...')
-        mass_videojoin.set_correct_duration(path_file_report)
-
-        # break_point
-        input('Duration metadata corrected.\n' +
-              'Type something to go to the main menu, ' +
-              'and proceed to the "Group videos" process.')
-        mass_videojoin.clean_cmd()
-
-        main()
-        return
-
-    # '4-Group videos with the same codec and resolution')
-    # join videos
-    elif menu_answer == 4:
-
-        # ask start_index_number to user
-        start_index_number = get_start_index_number()
-
-        # establishes separation criteria for the join videos step
-        mass_videojoin.set_group_column(path_file_report)
-
-        # break_point
-        input('Review the file and then type something to ' +
-              'start the process that look for videos that ' +
-              'are too big and should be splitted')
-
-        # split videos too big
-        mass_videojoin.set_split_videos(path_file_report, file_size_limit_mb,
-                                        duration_limit)
-
-
-        # join all videos
-        mass_videojoin.set_join_videos(path_file_report, file_size_limit_mb,
-                                       duration_limit,
-                                       start_index_number,
-                                       activate_transition)
-
-        # play_sound()
-        # break_point
-        input('')
-        mass_videojoin.clean_cmd()
-
-        main()
-        return
-
-    # '5-Make Timestamps and Descriptions report')
-    elif menu_answer == 5:
-        # timestamp maker
-        path_folder_output = utils.get_path_folder_output()
-
-        print('Start hashtag index count with what value?')
-        start_index_number = input('(None for 1) Answer: ')
-        if start_index_number == '':
-            start_index_number = 1
-        else:
-            start_index_number = int(start_index_number)
-
-        timestamp_link_maker(folder_path_output=path_folder_output,
-                             file_path_report_origin=path_file_report,
-                             start_index_number=start_index_number)
-        # break_point
-        input('\nTimeStamp and descriptions files created')
-
-        header_maker()
-        input('\nType something to go to the main menu')
-        mass_videojoin.clean_cmd()
-        main()
-        return
-
-    # '6-Auto-send to Telegram')
-    elif menu_answer == 6:
-        # file sender
-        path_folder_output = utils.get_path_folder_output()
-        #  Generate config_data dictionary
-        dict_config = config_data.config_data()
-        print(f'\nProject: {path_folder_output}\n')
-
-        telegram_filesender.main(folder_path_descriptions=path_folder_output,
-                                 dict_config=dict_config)
-
-        # break_point
-        input('All files were sent to the telegram')
-        mass_videojoin.clean_cmd()
-        return
 
 
 if __name__ == "__main__":

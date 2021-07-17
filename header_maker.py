@@ -88,10 +88,10 @@ def get_project_name(df):
     """
     Includes to the right of the DataFrame, columns corresponding to each
      depth level of the folder structure of the origin files
-    :df: DataFrame. Requires column 'file_folder_origin'
+    :df: DataFrame. Requires column 'file_path_folder_origin'
     """
 
-    df_folder = df['file_folder_origin'].str.split('\\', expand=True)
+    df_folder = df['file_path_folder_origin'].str.split('\\', expand=True)
     serie_name_project = get_serie_name_project(df_folder)
     project_name = serie_name_project.tolist()[0]
     return project_name
@@ -105,14 +105,13 @@ def get_duration_filesize(df):
     return duration, file_size
 
 
-def header_maker():
+def header_maker(path_folder_output):
 
     # main variables declaration
     file_name_video_details = 'video_details.xlsx'
     path_file_template_header = 'header_template.txt'
 
     # get list of video_files reports
-    path_folder_output = utils.get_path_folder_output()
     list_video_details_path_file = \
         get_list_video_details_path_file(
             path_dir=path_folder_output,
