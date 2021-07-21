@@ -127,22 +127,6 @@ def menu_ask():
         raise msg_invalid_option
 
 
-def get_how_many_files_in_folder(path_folder):
-
-    count = len([name for name in os.listdir(path_folder)
-                 if os.path.join(path_folder, name)])
-    return count
-
-
-def get_start_index_output():
-
-    path_folder_output_files = os.path.join(utils.get_path_folder_output(),
-                                            'output_videos')
-    count_files = get_how_many_files_in_folder(path_folder_output_files)
-    start_index_output = count_files + 1
-    return start_index_output
-
-
 def play_sound():
 
     path_file_sound = ''
@@ -211,8 +195,15 @@ def main():
     duration_limit = config['duration_limit']
     activate_transition = config['activate_transition']
     start_index = int(config['start_index'])
-    path_file_report = None
-    path_dir = None
+    hashtag_index = config['hashtag_index']
+    path_summary_top = config['path_summary_top']
+    path_summary_bot = config['path_summary_bot']
+    dict_summary = {}
+    dict_summary['path_summary_top'] = path_summary_top
+    dict_summary['path_summary_bot'] = path_summary_bot
+
+    file_path_report = None
+    folder_path_report = None
 
     while True:
         menu_answer = menu_ask()
@@ -221,11 +212,13 @@ def main():
         if menu_answer == 1:
             # Zip not video files
 
-            path_dir = mass_videojoin.get_path_dir(path_dir)
-            path_file_report = mass_videojoin.set_path_file_report(path_dir)
-            folder_path_output = os.path.dirname(path_file_report)
+            folder_path_report = \
+                mass_videojoin.get_path_dir(folder_path_report)
+            file_path_report = \
+                mass_videojoin.set_path_file_report(folder_path_report)
+            folder_path_project = os.path.dirname(file_path_report)
 
-            if os.path.isdir(path_dir) is False:
+            if os.path.isdir(folder_path_report) is False:
                 input('\nThe folder does not exist.')
                 mass_videojoin.clean_cmd()
                 continue
@@ -233,16 +226,16 @@ def main():
             file_size_limit_mb = define_mb_per_file(path_file_config,
                                                     file_size_limit_mb)
 
-            if zipind.ensure_folder_sanatize(path_dir, max_path) is False:
+            if zipind.ensure_folder_sanatize(folder_path_report, max_path) is False:
                 mass_videojoin.clean_cmd()
                 continue
 
-            path_folder_output = os.path.join(folder_path_output,
+            folder_path_output = os.path.join(folder_path_project,
                                               'output_videos')
-            utils.ensure_folder_existence([path_folder_output])
-            zipind_core.zipind(path_dir=path_dir,
+            utils.ensure_folder_existence([folder_path_output])
+            zipind_core.zipind(path_dir=folder_path_report,
                                mb_per_file=file_size_limit_mb,
-                               path_dir_output=path_folder_output,
+                               path_dir_output=folder_path_output,
                                mode=mode,
                                ignore_extensions=list_video_extensions)
             # break_point
@@ -255,11 +248,13 @@ def main():
         # create Dataframe of video details
         elif menu_answer == 2:
 
-            path_dir = mass_videojoin.get_path_dir(path_dir)
-            path_file_report = mass_videojoin.set_path_file_report(path_dir)
+            folder_path_report = \
+                mass_videojoin.get_path_dir(folder_path_report)
+            file_path_report = \
+                mass_videojoin.set_path_file_report(folder_path_report)
 
-            mass_videojoin.step_create_report_filled(path_dir,
-                                                     path_file_report,
+            mass_videojoin.step_create_report_filled(folder_path_report,
+                                                     file_path_report,
                                                      list_video_extensions)
 
             print('\nIf necessary, change the reencode plan in the column ' +
@@ -277,21 +272,23 @@ def main():
         elif menu_answer == 3:
 
             # define variables
-            path_dir = mass_videojoin.get_path_dir(path_dir)
-            path_file_report = mass_videojoin.set_path_file_report(path_dir)
-            path_folder_videos_encoded = \
-                mass_videojoin.set_path_folder_videos_encoded(path_dir)
-            mass_videojoin.ensure_folder_existence([path_folder_videos_encoded])
+            folder_path_report = \
+                mass_videojoin.get_path_dir(folder_path_report)
+            file_path_report = \
+                mass_videojoin.set_path_file_report(folder_path_report)
+            folder_path_videos_encoded = \
+                mass_videojoin.set_path_folder_videos_encoded(folder_path_report)
+            mass_videojoin.ensure_folder_existence([folder_path_videos_encoded])
 
             # reencode videos mark in column video_resolution_to_change
-            mass_videojoin.set_make_reencode(path_file_report,
-                                             path_folder_videos_encoded)
+            mass_videojoin.set_make_reencode(file_path_report,
+                                             folder_path_videos_encoded)
 
             # play_sound()
 
             # correct videos duration
             print('start correcting the duration metadata')
-            mass_videojoin.set_correct_duration(path_file_report)
+            mass_videojoin.set_correct_duration(file_path_report)
 
             # break_point
             input('Duration metadata corrected.\n' +
@@ -306,27 +303,29 @@ def main():
         elif menu_answer == 4:
 
             # define variables
-            path_dir = mass_videojoin.get_path_dir(path_dir)
-            path_file_report = mass_videojoin.set_path_file_report(path_dir)
+            folder_path_report = \
+                mass_videojoin.get_path_dir(folder_path_report)
+            file_path_report = \
+                mass_videojoin.set_path_file_report(folder_path_report)
 
-            path_folder_videos_splitted = \
-                mass_videojoin.set_path_folder_videos_splitted(path_dir)
-            mass_videojoin.ensure_folder_existence([path_folder_videos_splitted])
+            folder_path_videos_splitted = \
+                mass_videojoin.set_path_folder_videos_splitted(folder_path_report)
+            mass_videojoin.ensure_folder_existence([folder_path_videos_splitted])
 
-            path_folder_videos_joined = \
-                mass_videojoin.set_path_folder_videos_joined(path_dir)
-            mass_videojoin.ensure_folder_existence([path_folder_videos_joined])
+            folder_path_videos_joined = \
+                mass_videojoin.set_path_folder_videos_joined(folder_path_report)
+            mass_videojoin.ensure_folder_existence([folder_path_videos_joined])
 
             filename_output = \
-                mass_videojoin.get_folder_name_normalized(path_dir)
+                mass_videojoin.get_folder_name_normalized(folder_path_report)
 
-            path_folder_videos_cache = \
-                mass_videojoin.set_path_folder_videos_cache(path_dir)
-            mass_videojoin.ensure_folder_existence([path_folder_videos_cache])
+            folder_path_videos_cache = \
+                mass_videojoin.set_path_folder_videos_cache(folder_path_report)
+            mass_videojoin.ensure_folder_existence([folder_path_videos_cache])
 
             # Fill group_column.
             #  Establishes separation criteria for the join videos step
-            mass_videojoin.set_group_column(path_file_report)
+            mass_videojoin.set_group_column(file_path_report)
 
             # break_point
             input('Review the file and then type something to ' +
@@ -334,18 +333,17 @@ def main():
                   'are too big and should be splitted')
 
             # split videos too big
-            mass_videojoin.set_split_videos(path_file_report,
+            mass_videojoin.set_split_videos(file_path_report,
                                             file_size_limit_mb,
-                                            path_folder_videos_splitted,
+                                            folder_path_videos_splitted,
                                             duration_limit)
 
-
             # join all videos
-            mass_videojoin.set_join_videos(path_file_report,
+            mass_videojoin.set_join_videos(file_path_report,
                                            file_size_limit_mb,
                                            filename_output,
-                                           path_folder_videos_joined,
-                                           path_folder_videos_cache,
+                                           folder_path_videos_joined,
+                                           folder_path_videos_cache,
                                            duration_limit,
                                            start_index,
                                            activate_transition)
@@ -359,24 +357,29 @@ def main():
             mass_videojoin.clean_cmd()
             continue
 
-        # '5-Make Timestamps and Descriptions report')
+        # '5-Make Descriptions report with timestamps, summary.txt
+        #     and head_project.txt'
         elif menu_answer == 5:
             # timestamp maker
 
             # define variables
-            path_dir = mass_videojoin.get_path_dir(path_dir)
-            path_file_report = mass_videojoin.set_path_file_report(path_dir)
-            folder_path_output = os.path.dirname(path_file_report)
+            folder_path_report = \
+                mass_videojoin.get_path_dir(folder_path_report)
+            file_path_report = \
+                mass_videojoin.set_path_file_report(folder_path_report)
+            folder_path_project = os.path.dirname(file_path_report)
 
             # make descriptions.xlsx and summary.txt
-            timestamp_link_maker(folder_path_output=folder_path_output,
-                                 file_path_report_origin=path_file_report,
-                                 start_index_number=start_index)
+            timestamp_link_maker(folder_path_output=folder_path_project,
+                                 file_path_report_origin=file_path_report,
+                                 hashtag_index=hashtag_index,
+                                 start_index_number=start_index,
+                                 dict_summary=dict_summary)
             # break_point
             input('\nTimeStamp and descriptions files created')
 
             # make header project
-            header_maker(folder_path_output)
+            header_maker(folder_path_project)
 
             # break point
             input('\nType something to go to the main menu')
@@ -384,22 +387,24 @@ def main():
             mass_videojoin.clean_cmd()
             continue
 
-        # '6-Auto-send to Telegram')
+        # '6-Auto-send to Telegram'
         elif menu_answer == 6:
             # file sender
 
             # define variables
-            path_dir = mass_videojoin.get_path_dir(path_dir)
-            path_file_report = mass_videojoin.set_path_file_report(path_dir)
-            folder_path_output = os.path.dirname(path_file_report)
+            folder_path_report = \
+                mass_videojoin.get_path_dir(folder_path_report)
+            file_path_report = \
+                mass_videojoin.set_path_file_report(folder_path_report)
+            folder_path_project = os.path.dirname(file_path_report)
 
             # Generate config_data dictionary from config_data
             #  in repo telegram_filesender
             dict_config = config_data.config_data()
-            print(f'\nProject: {folder_path_output}\n')
+            print(f'\nProject: {folder_path_project}\n')
 
-            telegram_filesender.main(folder_path_output,
-                                     dict_config=dict_config)
+            telegram_filesender.main(folder_path_project,
+                                     dict_config)
 
             # break_point
             input('All files were sent to the telegram')
