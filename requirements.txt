@@ -4,6 +4,7 @@ natsort
 unidecode
 pyperclip
 pyautogui
-tgcrypto
 pyrogram
+tgcrypto
 openpyxl
+pandas

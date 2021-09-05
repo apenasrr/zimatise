@@ -47,34 +47,11 @@ try:
     import zipind, zipind_core
 
 except:
-    def add_path_script_folders(list_folders_name):
 
-        list_repo_dont_found = []
-        for folder_name in list_folders_name:
-            path_script_folder = os.path.abspath(
-                os.path.join('..', folder_name))
-            existence = os.path.isdir(path_script_folder)
-            if existence is False:
-                list_repo_dont_found.append(path_script_folder)
-            else:
-                sys.path.append(path_script_folder)
-
-        # alert in case of not found repositories
-        qt_not_found = len(list_repo_dont_found)
-        if qt_not_found != 0:
-            if qt_not_found > 1:
-                repo = 'repositories'
-            else:
-                repo = 'repository'
-            str_list_repo_dont_found = '\n'.join(list_repo_dont_found)
-            logging.error(f'The {repo} below could not be found. ' +
-                          'Make sure it exists with the proper folder ' +
-                          f'name.\n{str_list_repo_dont_found}\n')
-            exit()
 
     list_folders_name = ['Zipind', 'mass_videojoin', 'timestamp_link_maker',
                          'Telegram_filesender']
-    add_path_script_folders(list_folders_name)
+    utils.add_path_script_folders(list_folders_name)
     import mass_videojoin
     from timestamp_link_maker import timestamp_link_maker
     import telegram_filesender, config_data
@@ -133,30 +110,6 @@ def play_sound():
     os.system(f'start wmplayer "{path_file_sound}"')
 
 
-def get_start_index_number():
-
-    while True:
-        print('Start hashtag index count with what value?')
-        start_index_number = input('(None for 1) Answer: ')
-        if start_index_number == '':
-            start_index_number = 1
-            return start_index_number
-        else:
-            if start_index_number.isdigit():
-                start_index_number = int(start_index_number)
-                return start_index_number
-            else:
-                pass
-
-
-def get_folder_script_path():
-
-    folder_script_path_relative = os.path.dirname(__file__)
-    folder_script_path = os.path.realpath(folder_script_path_relative)
-
-    return folder_script_path
-
-
 def define_mb_per_file(path_file_config, file_size_limit_mb):
 
     if file_size_limit_mb is not None:
@@ -185,7 +138,7 @@ def main():
     """
 
     # get config data
-    folder_script_path = get_folder_script_path()
+    folder_script_path = utils.get_folder_script_path()
     path_file_config = os.path.join(folder_script_path, 'config.ini')
     config = utils.get_config_data(path_file_config)
     file_size_limit_mb = int(config['file_size_limit_mb'])
@@ -204,7 +157,7 @@ def main():
 
     file_path_report = None
     folder_path_report = None
-
+    utils.ensure_folder_existence(['projects'])
     while True:
         menu_answer = menu_ask()
 
