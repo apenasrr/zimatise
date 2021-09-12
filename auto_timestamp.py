@@ -2,6 +2,7 @@ import logging
 import os
 import time
 import utils
+import update_description_summary
 from header_maker import header_maker
 
 try:
@@ -48,6 +49,8 @@ def process_auto_timestamp(project_path):
     start_index = int(config['start_index'])
     path_summary_top = config['path_summary_top']
     path_summary_bot = config['path_summary_bot']
+    document_hashtag = config['document_hashtag']
+    document_title = config['document_title']
     dict_summary = {}
     dict_summary['path_summary_top'] = path_summary_top
     dict_summary['path_summary_bot'] = path_summary_bot
@@ -73,6 +76,10 @@ def process_auto_timestamp(project_path):
         # make header project
         header_maker(folder_path_project_process)
 
+        update_description_summary.main(path_summary_top,
+                                        folder_path_project_process,
+                                        document_hashtag,
+                                        document_title)
         return True
     except Exception as e:
         print(f'{e}\nAuto_Timestamp Error: {project_path}')

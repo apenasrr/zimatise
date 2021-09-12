@@ -39,6 +39,7 @@ import os
 import sys
 import utils
 from header_maker import header_maker
+import update_description_summary
 
 try:
     import mass_videojoin
@@ -151,6 +152,9 @@ def main():
     hashtag_index = config['hashtag_index']
     path_summary_top = config['path_summary_top']
     path_summary_bot = config['path_summary_bot']
+    document_hashtag = config['document_hashtag']
+    document_title = config['document_title']
+
     dict_summary = {}
     dict_summary['path_summary_top'] = path_summary_top
     dict_summary['path_summary_bot'] = path_summary_bot
@@ -328,12 +332,16 @@ def main():
                                  hashtag_index=hashtag_index,
                                  start_index_number=start_index,
                                  dict_summary=dict_summary)
-            # break_point
-            input('\nTimeStamp and descriptions files created')
+
+            update_description_summary.main(path_summary_top,
+                                            folder_path_project,
+                                            document_hashtag,
+                                            document_title)
 
             # make header project
             header_maker(folder_path_project)
 
+            print('\nTimeStamp and descriptions files created.')
             # break point
             input('\nType something to go to the main menu')
 

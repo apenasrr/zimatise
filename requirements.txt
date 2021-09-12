@@ -1,10 +1,10 @@
-numpy
-pandas
 natsort
-unidecode
-pyperclip
-pyautogui
-pyrogram
-tgcrypto
+numpy
 openpyxl
 pandas
+pyautogui
+pyperclip
+pyrogram
+shutil
+tgcrypto
+unidecode
