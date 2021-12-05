@@ -63,7 +63,7 @@ def logging_config():
 
     logfilename = 'log-' + 'zimatise' + '.txt'
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.INFO,
         format=' %(asctime)s-%(levelname)s-%(message)s',
         handlers=[logging.FileHandler(logfilename, 'w', 'utf-8')])
     # set up logging to console
