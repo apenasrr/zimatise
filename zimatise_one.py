@@ -183,7 +183,7 @@ def main():
             file_size_limit_mb = define_mb_per_file(path_file_config,
                                                     file_size_limit_mb)
 
-            if zipind.ensure_folder_sanatize(folder_path_report, max_path) is False:
+            if zipind.ensure_folder_sanitize(folder_path_report, max_path) is False:
                 mass_videojoin.clean_cmd()
                 continue
 
