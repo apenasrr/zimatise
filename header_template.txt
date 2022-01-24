@@ -6,5 +6,4 @@ Size: {file_size}
 Length: {duration}
 Invite: {chat_invite_link}
 
-This is an example do header file template.
-Format as you wish, but keep in mind that the {variables} are replaced by the values corresponding to your project.
+Via Zimatise
