@@ -162,6 +162,13 @@ def main():
     activate_transition = config["activate_transition"]
     start_index = int(config["start_index"])
     hashtag_index = config["hashtag_index"]
+
+    descriptions_auto_adapt_str = config["descriptions_auto_adapt"]
+    if descriptions_auto_adapt_str == 'true':
+        descriptions_auto_adapt = True
+    else:
+        descriptions_auto_adapt = False
+
     path_summary_top = config["path_summary_top"]
     path_summary_bot = config["path_summary_bot"]
     document_hashtag = config["document_hashtag"]
@@ -377,6 +384,7 @@ def main():
                 hashtag_index=hashtag_index,
                 start_index_number=start_index,
                 dict_summary=dict_summary,
+                descriptions_auto_adapt=descriptions_auto_adapt,
             )
 
             # fmt: off
