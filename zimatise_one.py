@@ -47,7 +47,7 @@ try:
     import telegram_filesender
     import zipind
     import zipind_core
-    from timestamp_link_maker import timestamp_link_maker
+    from timestamp_link_maker import timestamp_link_maker, utils_timestamp
 
 except:
 
@@ -63,7 +63,7 @@ except:
     import telegram_filesender
     import zipind
     import zipind_core
-    from timestamp_link_maker import timestamp_link_maker
+    from timestamp_link_maker import timestamp_link_maker, utils_timestamp
 
 
 def logging_config():
@@ -391,9 +391,16 @@ def main():
             header_maker(folder_path_project)
             print("\nTimeStamp and descriptions files created.")
 
-            # break point
-            input("\nType something to go to the main menu")
-
+            # Check if has warnings
+            # fmt: off
+            has_warning = \
+                utils_timestamp.check_descriptions_warning(folder_path_project)
+            if has_warning:
+                input('\nThere are warnings in the file "descriptions.xlsx".' +
+                      'Correct before the next step.')
+            else:
+                # break point
+                input("\nType something to go to the main menu")
             mass_videojoin.clean_cmd()
             continue
 
