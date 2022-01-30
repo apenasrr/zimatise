@@ -138,6 +138,140 @@ def define_mb_per_file(path_file_config, file_size_limit_mb):
         )
     return file_size_limit_mb
 
+def run_silent_mode(folder_path_report,
+                    file_path_report,
+                    list_video_extensions,
+                    file_size_limit_mb,
+                    duration_limit,
+                    start_index,
+                    activate_transition,
+                    hashtag_index,
+                    dict_summary,
+                    descriptions_auto_adapt,
+                    path_summary_top,
+                    document_hashtag,
+                    document_title,
+                    mode):
+
+    folder_path_report = \
+        mass_videojoin.get_path_dir(folder_path_report)
+    file_path_report = \
+        mass_videojoin.set_path_file_report(folder_path_report)
+    folder_path_project = os.path.dirname(file_path_report)
+
+    folder_path_output = os.path.join(folder_path_project,
+                                      "output_videos")
+
+    ################################### p1
+    utils.ensure_folder_existence([folder_path_output])
+    zipind_core.zipind(
+        path_dir=folder_path_report,
+        mb_per_file=file_size_limit_mb,
+        path_dir_output=folder_path_output,
+        mode=mode,
+        ignore_extensions=list_video_extensions,
+    )
+
+    ################################### p2
+    mass_videojoin.step_create_report_filled(
+    folder_path_report, file_path_report, list_video_extensions
+    )
+    ################################### p3
+    folder_path_videos_encoded = \
+        mass_videojoin.set_path_folder_videos_encoded(folder_path_report)
+    mass_videojoin.ensure_folder_existence([folder_path_videos_encoded])
+
+    # reencode videos mark in column video_resolution_to_change
+    mass_videojoin.set_make_reencode(file_path_report,
+                                    folder_path_videos_encoded)
+
+    ################################### p4
+    # fmt: off
+    folder_path_videos_splitted = \
+        mass_videojoin.set_path_folder_videos_splitted(folder_path_report)
+
+    # fmt: off
+    mass_videojoin.ensure_folder_existence([folder_path_videos_splitted])
+    # fmt: off
+    folder_path_videos_joined = \
+        mass_videojoin.set_path_folder_videos_joined(folder_path_report)
+
+    mass_videojoin.ensure_folder_existence([folder_path_videos_joined])
+
+    filename_output = mass_videojoin.get_folder_name_normalized(
+        folder_path_report
+    )
+
+    # fmt: off
+    folder_path_videos_cache = \
+        mass_videojoin.set_path_folder_videos_cache(folder_path_report)
+
+    mass_videojoin.ensure_folder_existence([folder_path_videos_cache])
+
+    # Fill group_column.
+    #  Establishes separation criteria for the join videos step
+    mass_videojoin.set_group_column(file_path_report)
+
+    # split videos too big
+    mass_videojoin.set_split_videos(
+        file_path_report,
+        file_size_limit_mb,
+        folder_path_videos_splitted,
+        duration_limit,
+    )
+
+    # join all videos
+    mass_videojoin.set_join_videos(
+        file_path_report,
+        file_size_limit_mb,
+        filename_output,
+        folder_path_videos_joined,
+        folder_path_videos_cache,
+        duration_limit,
+        start_index,
+        activate_transition,
+    )
+
+    ################################### p5
+
+    # make descriptions.xlsx and summary.txt
+    timestamp_link_maker(
+        folder_path_output=folder_path_project,
+        file_path_report_origin=file_path_report,
+        hashtag_index=hashtag_index,
+        start_index_number=start_index,
+        dict_summary=dict_summary,
+        descriptions_auto_adapt=descriptions_auto_adapt,
+    )
+
+    # fmt: off
+    update_description_summary.main(
+        path_summary_top,
+        folder_path_project,
+        document_hashtag,
+        document_title
+    )
+
+    # make header project
+    header_maker(folder_path_project)
+
+    # Check if has warnings
+    # fmt: off
+    has_warning = \
+        utils_timestamp.check_descriptions_warning(folder_path_project)
+    if has_warning:
+        input('\nThere are warnings in the file "descriptions.xlsx".' +
+                'Correct before the next step.')
+    else:
+        pass
+
+    ################################### p6
+
+    dict_config = config_data.config_data()
+    print(f"\nProject: {folder_path_project}\n")
+
+    telegram_filesender.send_via_telegram_api(folder_path_project, dict_config)
+
 
 def main():
     """
@@ -169,10 +303,17 @@ def main():
     else:
         descriptions_auto_adapt = False
 
+    silent_mode_str = config['silent_mode']
+    if silent_mode_str == 'true':
+        silent_mode = True
+    else:
+        silent_mode = False
+
     path_summary_top = config["path_summary_top"]
     path_summary_bot = config["path_summary_bot"]
     document_hashtag = config["document_hashtag"]
     document_title = config["document_title"]
+
 
     dict_summary = {}
     dict_summary["path_summary_top"] = path_summary_top
@@ -181,6 +322,29 @@ def main():
     file_path_report = None
     folder_path_report = None
     utils.ensure_folder_existence(["projects"])
+
+    if silent_mode:
+        while True:
+            ensure_silent_mode = input('Continue to silent mode? (y/n) ')
+            if ensure_silent_mode != 'y' and ensure_silent_mode != '':
+                break
+            run_silent_mode(folder_path_report,
+                            file_path_report,
+                            list_video_extensions,
+                            file_size_limit_mb,
+                            duration_limit,
+                            start_index,
+                            activate_transition,
+                            hashtag_index,
+                            dict_summary,
+                            descriptions_auto_adapt,
+                            path_summary_top,
+                            document_hashtag,
+                            document_title,
+                            mode)
+            input('\nProject processed and sent to Telegram')
+            mass_videojoin.clean_cmd()
+
     while True:
         menu_answer = menu_ask()
 
@@ -220,6 +384,7 @@ def main():
                 mode=mode,
                 ignore_extensions=list_video_extensions,
             )
+
             # break_point
             input("\nZip files created.")
 
