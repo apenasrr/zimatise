@@ -49,6 +49,8 @@ try:
     import zipind_core
     from timestamp_link_maker import timestamp_link_maker, utils_timestamp
 
+    import autopost_summary
+
 except:
 
     list_folders_name = [
@@ -64,6 +66,8 @@ except:
     import zipind
     import zipind_core
     from timestamp_link_maker import timestamp_link_maker, utils_timestamp
+
+    import autopost_summary
 
 
 def logging_config():
@@ -271,6 +275,9 @@ def run_silent_mode(folder_path_report,
     print(f"\nProject: {folder_path_project}\n")
 
     telegram_filesender.send_via_telegram_api(folder_path_project, dict_config)
+
+    # Post and Pin summary
+    autopost_summary.run(folder_path_project)
 
 
 def main():
@@ -599,7 +606,11 @@ def main():
             dict_config = config_data.config_data()
             print(f"\nProject: {folder_path_project}\n")
 
+            # Send project
             telegram_filesender.main(folder_path_project, dict_config)
+
+            # Post and Pin summary
+            autopost_summary.run(folder_path_project)
 
             # break_point
             input("All files were sent to the telegram")
