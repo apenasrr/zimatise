@@ -26,7 +26,7 @@ def get_chat_id(folder_path_summary):
 def send_summary(chat_id, summary_content):
 
     message_obj = api_telegram.send_message(chat_id, summary_content)
-    message_id = message_obj["message_id"]
+    message_id = message_obj.id
     return message_id
 
 

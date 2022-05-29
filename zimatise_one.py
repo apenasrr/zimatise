@@ -39,6 +39,7 @@ import os
 
 import update_description_summary
 import utils
+from description import single_mode
 from header_maker import header_maker
 
 try:
@@ -155,6 +156,7 @@ def run_silent_mode(folder_path_report,
                     path_summary_top,
                     document_hashtag,
                     document_title,
+                    reencode_plan,
                     mode):
 
     folder_path_report = \
@@ -178,7 +180,7 @@ def run_silent_mode(folder_path_report,
 
     ################################### p2
     mass_videojoin.step_create_report_filled(
-    folder_path_report, file_path_report, list_video_extensions
+    folder_path_report, file_path_report, list_video_extensions, reencode_plan
     )
     ################################### p3
     folder_path_videos_encoded = \
@@ -212,9 +214,10 @@ def run_silent_mode(folder_path_report,
 
     mass_videojoin.ensure_folder_existence([folder_path_videos_cache])
 
-    # Fill group_column.
-    #  Establishes separation criteria for the join videos step
-    mass_videojoin.set_group_column(file_path_report)
+    if reencode_plan == 'group':
+        # Fill group_column.
+        #  Establishes separation criteria for the join videos step
+        mass_videojoin.set_group_column(file_path_report)
 
     # split videos too big
     mass_videojoin.set_split_videos(
@@ -224,37 +227,46 @@ def run_silent_mode(folder_path_report,
         duration_limit,
     )
 
-    # join all videos
-    mass_videojoin.set_join_videos(
-        file_path_report,
-        file_size_limit_mb,
-        filename_output,
-        folder_path_videos_joined,
-        folder_path_videos_cache,
-        duration_limit,
-        start_index,
-        activate_transition,
-    )
+    if reencode_plan == 'group':
+        # join all videos
+        mass_videojoin.set_join_videos(
+            file_path_report,
+            file_size_limit_mb,
+            filename_output,
+            folder_path_videos_joined,
+            folder_path_videos_cache,
+            duration_limit,
+            start_index,
+            activate_transition,
+        )
 
     ################################### p5
 
-    # make descriptions.xlsx and summary.txt
-    timestamp_link_maker(
-        folder_path_output=folder_path_project,
-        file_path_report_origin=file_path_report,
-        hashtag_index=hashtag_index,
-        start_index_number=start_index,
-        dict_summary=dict_summary,
-        descriptions_auto_adapt=descriptions_auto_adapt,
-    )
+    if reencode_plan == 'group':
 
-    # fmt: off
-    update_description_summary.main(
-        path_summary_top,
-        folder_path_project,
-        document_hashtag,
-        document_title
-    )
+        # make descriptions.xlsx and summary.txt
+        timestamp_link_maker(
+            folder_path_output=folder_path_project,
+            file_path_report_origin=file_path_report,
+            hashtag_index=hashtag_index,
+            start_index_number=start_index,
+            dict_summary=dict_summary,
+            descriptions_auto_adapt=descriptions_auto_adapt,
+        )
+
+        # fmt: off
+        update_description_summary.main(
+            path_summary_top,
+            folder_path_project,
+            document_hashtag,
+            document_title
+        )
+    else:
+        #create descriptions.xlsx for single reencode
+        single_mode.single_description_summary(
+            folder_path_output=folder_path_project,
+            file_path_report_origin=file_path_report)
+
 
     # make header project
     header_maker(folder_path_project)
@@ -276,8 +288,9 @@ def run_silent_mode(folder_path_report,
 
     telegram_filesender.send_via_telegram_api(folder_path_project, dict_config)
 
-    # Post and Pin summary
-    autopost_summary.run(folder_path_project)
+    if reencode_plan == 'group':
+        # Post and Pin summary
+        autopost_summary.run(folder_path_project)
 
 
 def main():
@@ -303,6 +316,7 @@ def main():
     activate_transition = config["activate_transition"]
     start_index = int(config["start_index"])
     hashtag_index = config["hashtag_index"]
+    reencode_plan = config['reencode_plan']
 
     descriptions_auto_adapt_str = config["descriptions_auto_adapt"]
     if descriptions_auto_adapt_str == 'true':
@@ -348,6 +362,7 @@ def main():
                             path_summary_top,
                             document_hashtag,
                             document_title,
+                            reencode_plan,
                             mode)
             input('\nProject processed and sent to Telegram')
             mass_videojoin.clean_cmd()
@@ -409,7 +424,10 @@ def main():
                 mass_videojoin.set_path_file_report(folder_path_report)
 
             mass_videojoin.step_create_report_filled(
-                folder_path_report, file_path_report, list_video_extensions
+                folder_path_report,
+                file_path_report,
+                list_video_extensions,
+                reencode_plan
             )
 
             # fmt: off
@@ -492,43 +510,47 @@ def main():
 
             mass_videojoin.ensure_folder_existence([folder_path_videos_cache])
 
-            # Fill group_column.
-            #  Establishes separation criteria for the join videos step
-            mass_videojoin.set_group_column(file_path_report)
+            if not mass_videojoin.join_process_has_started(file_path_report):
+                if reencode_plan == 'group':
+                    # Fill group_column.
+                    #  Establishes separation criteria for the join videos step
+                    mass_videojoin.set_group_column(file_path_report)
 
-            # break_point
-            # fmt: off
-            input("Review the file and then type something to "
-                  "start the process that look for videos that "
-                  "are too big and should be splitted")
+                    # break_point
+                    # fmt: off
+                    input("Review the file and then type something to "
+                          "start the process that look for videos that "
+                          "are too big and should be splitted")
 
-            # split videos too big
-            mass_videojoin.set_split_videos(
-                file_path_report,
-                file_size_limit_mb,
-                folder_path_videos_splitted,
-                duration_limit,
-            )
+                # split videos too big
+                mass_videojoin.set_split_videos(
+                    file_path_report,
+                    file_size_limit_mb,
+                    folder_path_videos_splitted,
+                    duration_limit,
+                )
 
-            # join all videos
-            mass_videojoin.set_join_videos(
-                file_path_report,
-                file_size_limit_mb,
-                filename_output,
-                folder_path_videos_joined,
-                folder_path_videos_cache,
-                duration_limit,
-                start_index,
-                activate_transition,
-            )
+            if reencode_plan == 'group':
+                # join all videos
+                mass_videojoin.set_join_videos(
+                    file_path_report,
+                    file_size_limit_mb,
+                    filename_output,
+                    folder_path_videos_joined,
+                    folder_path_videos_cache,
+                    duration_limit,
+                    start_index,
+                    activate_transition,
+                )
 
-            # play_sound()
+                # play_sound()
 
-            # break_point
-            # fmt: off
-            input('\nAll videos were grouped. '
-                  'Go to the "Make Time Stamps" step.')
-
+                # break_point
+                # fmt: off
+                input('\nAll videos were grouped. '
+                      'Go to the "Make Time Stamps" step.')
+            else:
+                pass
             mass_videojoin.clean_cmd()
             continue
 
@@ -549,23 +571,32 @@ def main():
 
             folder_path_project = os.path.dirname(file_path_report)
 
-            # make descriptions.xlsx and summary.txt
-            timestamp_link_maker(
-                folder_path_output=folder_path_project,
-                file_path_report_origin=file_path_report,
-                hashtag_index=hashtag_index,
-                start_index_number=start_index,
-                dict_summary=dict_summary,
-                descriptions_auto_adapt=descriptions_auto_adapt,
-            )
+            if reencode_plan == 'group':
+                # make descriptions.xlsx and summary.txt
+                timestamp_link_maker(
+                    folder_path_output=folder_path_project,
+                    file_path_report_origin=file_path_report,
+                    hashtag_index=hashtag_index,
+                    start_index_number=start_index,
+                    dict_summary=dict_summary,
+                    descriptions_auto_adapt=descriptions_auto_adapt,
+                )
 
-            # fmt: off
-            update_description_summary.main(
-                path_summary_top,
-                folder_path_project,
-                document_hashtag,
-                document_title
-            )
+                # fmt: off
+                update_description_summary.main(
+                    path_summary_top,
+                    folder_path_project,
+                    document_hashtag,
+                    document_title
+                )
+            else:
+                #create descriptions.xlsx for single reencode
+                single_mode.single_description_summary(
+                    folder_path_output=folder_path_project,
+                    file_path_report_origin=file_path_report)
+
+                #TODO: create summary.txt for single reencode
+                pass
 
             # make header project
             header_maker(folder_path_project)
@@ -609,8 +640,9 @@ def main():
             # Send project
             telegram_filesender.main(folder_path_project, dict_config)
 
-            # Post and Pin summary
-            autopost_summary.run(folder_path_project)
+            if reencode_plan == 'group':
+                # Post and Pin summary
+                autopost_summary.run(folder_path_project)
 
             # break_point
             input("All files were sent to the telegram")
