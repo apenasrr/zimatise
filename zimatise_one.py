@@ -464,16 +464,16 @@ def main():
             # play_sound()
 
             # correct videos duration
-            print("start correcting the duration metadata")
-            mass_videojoin.set_correct_duration(file_path_report)
+            if reencode_plan == 'group':
+                print("start correcting the duration metadata")
+                mass_videojoin.set_correct_duration(file_path_report)
 
-            # break_point
+                # break_point
+                print('Duration metadata corrected.')
             input(
-                "Duration metadata corrected.\n"
-                + "Type something to go to the main menu, "
+                "Type something to go to the main menu, "
                 + 'and proceed to the "Group videos" process.'
             )
-
             mass_videojoin.clean_cmd()
             continue
 

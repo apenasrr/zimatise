@@ -2,12 +2,16 @@ import os
 
 import pandas as pd
 
+from . import single_mode_description
+
 
 def single_description_summary(folder_path_output, file_path_report_origin):
 
     # create description
     df = pd.read_excel(file_path_report_origin, engine="openpyxl")
-    df_desc = get_df_description_single_mode(df)
+    df_desc = single_mode_description.create_df_descriptions(
+        file_path_report_origin
+    )
     df_desc.to_excel(
         os.path.join(folder_path_output, "descriptions.xlsx"), index=False
     )
