@@ -189,7 +189,7 @@ def run_silent_mode(folder_path_report,
 
     # reencode videos mark in column video_resolution_to_change
     mass_videojoin.set_make_reencode(file_path_report,
-                                    folder_path_videos_encoded)
+                                     folder_path_videos_encoded)
 
     ################################### p4
     # fmt: off
@@ -262,11 +262,19 @@ def run_silent_mode(folder_path_report,
             document_title
         )
     else:
-        #create descriptions.xlsx for single reencode
+        # create descriptions.xlsx for single reencode
         single_mode.single_description_summary(
             folder_path_output=folder_path_project,
-            file_path_report_origin=file_path_report)
+            file_path_report_origin=file_path_report,
+            dict_summary=dict_summary)
 
+        # fmt: off
+        update_description_summary.main(
+            path_summary_top,
+            folder_path_project,
+            document_hashtag,
+            document_title
+        )
 
     # make header project
     header_maker(folder_path_project)
@@ -288,9 +296,8 @@ def run_silent_mode(folder_path_report,
 
     telegram_filesender.send_via_telegram_api(folder_path_project, dict_config)
 
-    if reencode_plan == 'group':
-        # Post and Pin summary
-        autopost_summary.run(folder_path_project)
+    # Post and Pin summary
+    autopost_summary.run(folder_path_project)
 
 
 def main():
@@ -593,10 +600,16 @@ def main():
                 #create descriptions.xlsx for single reencode
                 single_mode.single_description_summary(
                     folder_path_output=folder_path_project,
-                    file_path_report_origin=file_path_report)
+                    file_path_report_origin=file_path_report,
+                    dict_summary=dict_summary)
 
-                #TODO: create summary.txt for single reencode
-                pass
+                # fmt: off
+                update_description_summary.main(
+                    path_summary_top,
+                    folder_path_project,
+                    document_hashtag,
+                    document_title
+                )
 
             # make header project
             header_maker(folder_path_project)
@@ -640,9 +653,8 @@ def main():
             # Send project
             telegram_filesender.main(folder_path_project, dict_config)
 
-            if reencode_plan == 'group':
                 # Post and Pin summary
-                autopost_summary.run(folder_path_project)
+            autopost_summary.run(folder_path_project)
 
             # break_point
             input("All files were sent to the telegram")

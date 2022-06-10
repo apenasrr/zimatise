@@ -157,7 +157,7 @@ def create_df_descriptions(file_path_report_origin):
         "file_name_origin",
     ]
     df_video_details = timestamp_link_maker.get_df_source(
-        file_path_report_origin, list_columns_keep
+        file_path_report_origin, list_columns_keep=list_columns_keep
     )
     serie_file_name = df_video_details["file_name_origin"].apply(
         lambda x: os.path.splitext(x)[0]

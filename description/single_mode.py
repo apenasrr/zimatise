@@ -2,21 +2,34 @@ import os
 
 import pandas as pd
 
-from . import single_mode_description
+from . import single_mode_description, single_mode_summary
 
 
-def single_description_summary(folder_path_output, file_path_report_origin):
+def create_txt(file_path, stringa):
+
+    f = open(file_path, "w", encoding="utf8")
+    f.write(stringa)
+    f.close()
+
+
+def single_description_summary(
+    folder_path_output, file_path_report_origin, dict_summary
+):
 
     # create description
     df = pd.read_excel(file_path_report_origin, engine="openpyxl")
     df_desc = single_mode_description.create_df_descriptions(
         file_path_report_origin
     )
-    df_desc.to_excel(
-        os.path.join(folder_path_output, "descriptions.xlsx"), index=False
-    )
+    description_path = os.path.join(folder_path_output, "descriptions.xlsx")
+    df_desc.to_excel(description_path, index=False)
 
-    # TODO: create summary
+    # create summary
+    summary_content = single_mode_summary.main(
+        file_path_report_origin, dict_summary
+    )
+    summary_path = os.path.join(folder_path_output, "summary.txt")
+    create_txt(summary_path, summary_content)
 
 
 def get_df_description_single_mode(df):
