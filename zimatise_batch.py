@@ -36,8 +36,10 @@
 
 import logging
 import os
+import shutil
 import time
 
+import moc
 import update_description_summary
 import utils
 from description import single_mode
@@ -145,21 +147,48 @@ def define_mb_per_file(path_file_config, file_size_limit_mb):
     return file_size_limit_mb
 
 
+def send_to_moc(send_moc, moc_chat_id, template_moc, folder_path_project):
+
+    if send_moc==1:
+        moc.pipe_publish(moc_chat_id, template_moc, folder_path_project)
+
+
+def clean_temp_files(autodel_video_temp, folder_path_project):
+
+    list_folder_name_to_delete = ['output_videos',
+                                  'videos_encoded',
+                                  'videos_splitted']
+    if autodel_video_temp != 1:
+        return
+
+    for folder_name_to_delete in list_folder_name_to_delete:
+        path_folder_to_delete = os.path.join(folder_path_project,
+                                             folder_name_to_delete)
+        if os.path.exists(path_folder_to_delete):
+            shutil.rmtree(path_folder_to_delete,
+                          ignore_errors=True)
+        else:
+            pass
+
+
 def run(folder_path_report,
-                    file_path_report,
-                    list_video_extensions,
-                    file_size_limit_mb,
-                    duration_limit,
-                    start_index,
-                    activate_transition,
-                    hashtag_index,
-                    dict_summary,
-                    descriptions_auto_adapt,
-                    path_summary_top,
-                    document_hashtag,
-                    document_title,
-                    reencode_plan,
-                    mode):
+        file_path_report,
+        list_video_extensions,
+        file_size_limit_mb,
+        duration_limit,
+        start_index,
+        activate_transition,
+        hashtag_index,
+        dict_summary,
+        descriptions_auto_adapt,
+        path_summary_top,
+        document_hashtag,
+        document_title,
+        reencode_plan,
+        mode,
+        send_moc,
+        moc_chat_id,
+        autodel_video_temp):
 
     folder_path_report = \
         mass_videojoin.get_path_dir(folder_path_report)
@@ -299,6 +328,11 @@ def run(folder_path_report,
     # Post and Pin summary
     autopost_summary.run(folder_path_project)
 
+    # Publish on moc
+    send_to_moc(send_moc, moc_chat_id, 'moc_template.txt', folder_path_project)
+
+    clean_temp_files(autodel_video_temp, folder_path_project)
+
 
 def get_list_project_path(root_folder_path):
 
@@ -338,6 +372,9 @@ def main():
     start_index = int(config["start_index"])
     hashtag_index = config["hashtag_index"]
     reencode_plan = config['reencode_plan']
+    send_moc = int(config["send_moc"])
+    moc_chat_id = int(config["moc_chat_id"])
+    autodel_video_temp = int(config['autodel_video_temp'])
 
     descriptions_auto_adapt_str = config["descriptions_auto_adapt"]
     if descriptions_auto_adapt_str == 'true':
@@ -383,7 +420,10 @@ def main():
                 document_hashtag,
                 document_title,
                 reencode_plan,
-                mode)
+                mode,
+                send_moc,
+                moc_chat_id,
+                autodel_video_temp)
         input('\nProject processed and sent to Telegram')
         mass_videojoin.clean_cmd()
 
