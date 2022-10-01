@@ -1,19 +1,17 @@
 import os
 import sys
+from pathlib import Path
 
 import pandas as pd
 
 script_path = os.path.realpath(__file__)
 script_folder_path = os.path.dirname(script_path)
-suite_folder_path = os.path.abspath(
-    os.path.join(script_folder_path, "..", "..")
+folder_timestamp_link_maker = (
+    Path(script_folder_path).parent / "timestamp_link_maker"
 )
-folder_timestamp_link_maker = os.path.join(
-    suite_folder_path, "timestamp_link_maker"
-)
-sys.path.append(folder_timestamp_link_maker)
 
-import timestamp_link_maker
+sys.path.append(folder_timestamp_link_maker)
+from timestamp_link_maker import timestamp_link_maker
 
 
 def get_df_desc_draft(serie_folder_relative, serie_file_name):
@@ -143,7 +141,7 @@ def create_df_descriptions(file_path_report_origin):
         "file_name_origin",
         "file_output"]
     Args:
-        file_path_report_origin (str): Report path in excel format
+        file_path_report_origin (str): Report path in csv format
 
     Returns:
         pandas.DataFrame:

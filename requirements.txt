@@ -1,3 +1,4 @@
+asyncio
 natsort
 numpy
 openpyxl
@@ -7,3 +8,6 @@ pyperclip
 pyrogram
 tgcrypto
 unidecode
+tgsender
+vidtool
+zipind

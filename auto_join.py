@@ -1,15 +1,11 @@
 import logging
 import os
 import time
-import utils
 
-try:
-    import zimatise_monitor
-    import mass_videojoin
-except:
-    utils.add_path_script_folders(['mass_videojoin'])
-    import zimatise_monitor
-    import mass_videojoin
+import vidtool
+
+import utils
+import zimatise_monitor
 
 
 def logging_config():
@@ -61,7 +57,7 @@ def process_auto_join(project_path):
     utils.ensure_folder_existence([folder_path_videos_joined])
 
     filename_output = \
-        mass_videojoin.get_folder_name_normalized(project_path)
+        vidtool.get_folder_name_normalized(project_path)
 
     folder_path_videos_cache = \
         os.path.join(folder_path_project_process, 'cache')
@@ -70,15 +66,15 @@ def process_auto_join(project_path):
     try:
         # Fill group_column.
         #  Establishes separation criteria for the join videos step
-        mass_videojoin.set_group_column(file_path_report)
+        vidtool.set_group_column(file_path_report)
 
         # split videos too big
-        mass_videojoin.set_split_videos(file_path_report,
+        vidtool.set_split_videos(file_path_report,
                                         file_size_limit_mb,
                                         folder_path_videos_splitted,
                                         duration_limit)
         # join all videos
-        mass_videojoin.set_join_videos(file_path_report,
+        vidtool.set_join_videos(file_path_report,
                                         file_size_limit_mb,
                                         filename_output,
                                         folder_path_videos_joined,

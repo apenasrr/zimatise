@@ -1,22 +1,28 @@
-import pandas as pd
-import os
-import utils
 import logging
+import os
+from pathlib import Path
+
+import pandas as pd
+
+import utils
 
 
 def logging_config():
 
-    logfilename = 'log-' + 'test_haader' + '.txt'
-    logging.basicConfig(filename=logfilename, level=logging.DEBUG,
-                        format=' %(asctime)s-%(levelname)s-%(message)s')
+    logfilename = "log-" + "test_haader" + ".txt"
+    logging.basicConfig(
+        filename=logfilename,
+        level=logging.DEBUG,
+        format=" %(asctime)s-%(levelname)s-%(message)s",
+    )
     # set up logging to console
     console = logging.StreamHandler()
     console.setLevel(logging.INFO)
     # set a format which is simpler for console use
-    formatter = logging.Formatter(' %(asctime)s-%(levelname)s-%(message)s')
+    formatter = logging.Formatter(" %(asctime)s-%(levelname)s-%(message)s")
     console.setFormatter(formatter)
     # add the handler to the root logger
-    logging.getLogger('').addHandler(console)
+    logging.getLogger("").addHandler(console)
 
 
 def get_list_video_details_path_file(path_dir, file_name):
@@ -35,20 +41,19 @@ def get_dataframe_concat(list_video_details_path_file):
 
     df = pd.DataFrame()
     for video_details_path_file in list_video_details_path_file:
-        df_unique = pd.read_excel(video_details_path_file, engine='openpyxl')
+        df_unique = pd.read_csv(video_details_path_file)
         df = pd.concat([df, df_unique], ignore_index=True)
     return df
 
 
 def get_duration_filesize_gross(df):
 
+    df_filter = df.loc[:, ["file_size", "duration"]]
+    df_filter["duration"] = pd.to_timedelta(df_filter["duration"])
+    duration_sum = df_filter["duration"].sum()
 
-    df_filter = df.loc[:,['file_size', 'duration']]
-    df_filter['duration'] = pd.to_timedelta(df_filter['duration'])
-    duration_sum = df_filter['duration'].sum()
-
-    file_size_sum_bytes = df_filter['file_size'].sum()
-    file_size_sum_mb = file_size_sum_bytes/(1024**3)
+    file_size_sum_bytes = df_filter["file_size"].sum()
+    file_size_sum_mb = file_size_sum_bytes / (1024**3)
     file_size_sum_mb = round(file_size_sum_mb, 1)
 
     duration = duration_sum
@@ -57,10 +62,9 @@ def get_duration_filesize_gross(df):
 
 
 def get_serie_name_project(df_folder):
-
     def check_col_unique_values(serie):
 
-        serie_unique = serie.drop_duplicates(keep='first')
+        serie_unique = serie.drop_duplicates(keep="first")
         list_unique_values = serie_unique.unique().tolist()
         qt_unique_values = len(list_unique_values)
         if qt_unique_values == 1:
@@ -91,7 +95,7 @@ def get_project_name(df):
     :df: DataFrame. Requires column 'file_path_folder_origin'
     """
 
-    df_folder = df['file_path_folder_origin'].str.split('\\', expand=True)
+    df_folder = df["file_path_folder_origin"].str.split("\\", expand=True)
     serie_name_project = get_serie_name_project(df_folder)
     project_name = serie_name_project.tolist()[0]
     return project_name
@@ -101,21 +105,20 @@ def get_duration_filesize(df):
 
     duration, file_size = get_duration_filesize_gross(df)
     duration = utils.format_time_delta(duration)
-    file_size = str(file_size) + ' gb'
+    file_size = str(file_size) + " gb"
     return duration, file_size
 
 
 def header_maker(path_folder_output):
 
     # main variables declaration
-    file_name_video_details = 'video_details.xlsx'
-    path_file_template_header = 'header_template.txt'
+    file_name_video_details = "video_details.csv"
+    path_file_template_header = Path("user") / "header_template.txt"
 
     # get list of video_files reports
-    list_video_details_path_file = \
-        get_list_video_details_path_file(
-            path_dir=path_folder_output,
-            file_name=file_name_video_details)
+    list_video_details_path_file = get_list_video_details_path_file(
+        path_dir=path_folder_output, file_name=file_name_video_details
+    )
 
     # create dataframe unifieds
     df = get_dataframe_concat(list_video_details_path_file)
@@ -123,14 +126,17 @@ def header_maker(path_folder_output):
     # create variables
     duration, file_size = get_duration_filesize(df)
     project_name = get_project_name(df)
-    d_keys = {'project_name': project_name,
-              'file_size': file_size,
-              'duration': duration}
+    d_keys = {
+        "project_name": project_name,
+        "file_size": file_size,
+        "duration": duration,
+    }
 
     # load template
-    file_path = os.path.join(path_folder_output, 'header_project.txt')
-    template_content = \
-        utils.get_txt_content(file_path=path_file_template_header)
+    file_path = os.path.join(path_folder_output, "header_project.txt")
+    template_content = utils.get_txt_content(
+        file_path=path_file_template_header
+    )
 
     # create output_content, replacing keys to values
     output_content = utils.compile_template(d_keys, template_content)
@@ -139,8 +145,8 @@ def header_maker(path_folder_output):
     utils.create_txt(file_path=file_path, stringa=output_content)
 
     # show message
-    print(f'\n{output_content}')
-    print('\n==Header Created==')
+    print(f"\n{output_content}")
+    print("\n==Header Created==")
 
 
 if __name__ == "__main__":

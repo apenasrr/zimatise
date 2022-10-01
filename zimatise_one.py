@@ -13,9 +13,8 @@
 
     Requirements:
     -https://github.com/apenasrr/zipind
-    -https://github.com/apenasrr/mass_videojoin
-    -https://github.com/apenasrr/timestamp_link_maker
-    -https://github.com/apenasrr/telegram_filesender
+    -https://github.com/apenasrr/vidtool
+    -https://github.com/apenasrr/tgsender
 
     ## How to use
     -Place the folder of the 4 required repositories and this repository in the
@@ -36,39 +35,18 @@
 
 import logging
 import os
+from pathlib import Path
 
+import vidtool
+import zipind
+from tgsender import tgsender
+
+import autopost_summary
 import update_description_summary
 import utils
 from description import single_mode
 from header_maker import header_maker
-
-try:
-    import config_data
-    import mass_videojoin
-    import telegram_filesender
-    import zipind
-    import zipind_core
-    from timestamp_link_maker import timestamp_link_maker, utils_timestamp
-
-    import autopost_summary
-
-except:
-
-    list_folders_name = [
-        "Zipind",
-        "mass_videojoin",
-        "timestamp_link_maker",
-        "Telegram_filesender",
-    ]
-    utils.add_path_script_folders(list_folders_name)
-    import config_data
-    import mass_videojoin
-    import telegram_filesender
-    import zipind
-    import zipind_core
-    from timestamp_link_maker import timestamp_link_maker, utils_timestamp
-
-    import autopost_summary
+from timestamp_link_maker import timestamp_link_maker, utils_timestamp
 
 
 def logging_config():
@@ -91,11 +69,12 @@ def logging_config():
 
 def menu_ask():
 
-    # fmt: off
     print("1-Create independent Zip parts for not_video_files")
     print("2-Generate worksheet listing the files")
-    print("3-Process reencode of videos marked in column "
-          '"video_resolution_to_change"')
+    print(
+        "3-Process reencode of videos marked in column "
+        '"video_resolution_to_change"'
+    )
     print("4-Group videos with the same codec and resolution")
     print("5-Make Timestamps and Descriptions report")
     print("6-Auto-send to Telegram")
@@ -132,45 +111,45 @@ def define_mb_per_file(path_file_config, file_size_limit_mb):
             f"Define limit of {file_size_limit_mb} " + "MB per file? y/n\n"
         )
         if repeat_size == "n":
-            file_size_limit_mb = zipind.ask_mb_file()
-            zipind.config_update_data(
+            file_size_limit_mb = zipind.zipind.ask_mb_file()
+            zipind.zipind.config_update_data(
                 path_file_config, "file_size_limit_mb", str(file_size_limit_mb)
             )
     else:
-        file_size_limit_mb = zipind.ask_mb_file()
-        zipind.config_update_data(
+        file_size_limit_mb = zipind.zipind.ask_mb_file()
+        zipind.zipind.config_update_data(
             path_file_config, "file_size_limit_mb", str(file_size_limit_mb)
         )
     return file_size_limit_mb
 
-def run_silent_mode(folder_path_report,
-                    file_path_report,
-                    list_video_extensions,
-                    file_size_limit_mb,
-                    duration_limit,
-                    start_index,
-                    activate_transition,
-                    hashtag_index,
-                    dict_summary,
-                    descriptions_auto_adapt,
-                    path_summary_top,
-                    document_hashtag,
-                    document_title,
-                    reencode_plan,
-                    mode):
 
-    folder_path_report = \
-        mass_videojoin.get_path_dir(folder_path_report)
-    file_path_report = \
-        mass_videojoin.set_path_file_report(folder_path_report)
+def run_silent_mode(
+    folder_path_report,
+    file_path_report,
+    list_video_extensions,
+    file_size_limit_mb,
+    duration_limit,
+    start_index,
+    activate_transition,
+    hashtag_index,
+    dict_summary,
+    descriptions_auto_adapt,
+    path_summary_top,
+    document_hashtag,
+    document_title,
+    reencode_plan,
+    mode,
+):
+
+    folder_path_report = vidtool.get_folder_path(folder_path_report)
+    file_path_report = vidtool.set_path_file_report(folder_path_report)
     folder_path_project = os.path.dirname(file_path_report)
 
-    folder_path_output = os.path.join(folder_path_project,
-                                      "output_videos")
+    folder_path_output = os.path.join(folder_path_project, "output_videos")
 
     ################################### p1
     utils.ensure_folder_existence([folder_path_output])
-    zipind_core.zipind(
+    zipind.zipind_core.run(
         path_dir=folder_path_report,
         mb_per_file=file_size_limit_mb,
         path_dir_output=folder_path_output,
@@ -179,57 +158,59 @@ def run_silent_mode(folder_path_report,
     )
 
     ################################### p2
-    mass_videojoin.step_create_report_filled(
-    folder_path_report, file_path_report, list_video_extensions, reencode_plan
+    vidtool.step_create_report_filled(
+        folder_path_report,
+        file_path_report,
+        list_video_extensions,
+        reencode_plan,
     )
     ################################### p3
-    folder_path_videos_encoded = \
-        mass_videojoin.set_path_folder_videos_encoded(folder_path_report)
-    mass_videojoin.ensure_folder_existence([folder_path_videos_encoded])
+    folder_path_videos_encoded = vidtool.set_path_folder_videos_encoded(
+        folder_path_report
+    )
+    vidtool.ensure_folder_existence([folder_path_videos_encoded])
 
     # reencode videos mark in column video_resolution_to_change
-    mass_videojoin.set_make_reencode(file_path_report,
-                                     folder_path_videos_encoded)
+    vidtool.set_make_reencode(file_path_report, folder_path_videos_encoded)
 
     ################################### p4
-    # fmt: off
-    folder_path_videos_splitted = \
-        mass_videojoin.set_path_folder_videos_splitted(folder_path_report)
 
-    # fmt: off
-    mass_videojoin.ensure_folder_existence([folder_path_videos_splitted])
-    # fmt: off
-    folder_path_videos_joined = \
-        mass_videojoin.set_path_folder_videos_joined(folder_path_report)
-
-    mass_videojoin.ensure_folder_existence([folder_path_videos_joined])
-
-    filename_output = mass_videojoin.get_folder_name_normalized(
+    folder_path_videos_splitted = vidtool.set_path_folder_videos_splitted(
         folder_path_report
     )
 
-    # fmt: off
-    folder_path_videos_cache = \
-        mass_videojoin.set_path_folder_videos_cache(folder_path_report)
+    vidtool.ensure_folder_existence([folder_path_videos_splitted])
 
-    mass_videojoin.ensure_folder_existence([folder_path_videos_cache])
+    folder_path_videos_joined = vidtool.set_path_folder_videos_joined(
+        folder_path_report
+    )
 
-    if reencode_plan == 'group':
+    vidtool.ensure_folder_existence([folder_path_videos_joined])
+
+    filename_output = vidtool.get_folder_name_normalized(folder_path_report)
+
+    folder_path_videos_cache = vidtool.set_path_folder_videos_cache(
+        folder_path_report
+    )
+
+    vidtool.ensure_folder_existence([folder_path_videos_cache])
+
+    if reencode_plan == "group":
         # Fill group_column.
         #  Establishes separation criteria for the join videos step
-        mass_videojoin.set_group_column(file_path_report)
+        vidtool.set_group_column(file_path_report)
 
     # split videos too big
-    mass_videojoin.set_split_videos(
+    vidtool.set_split_videos(
         file_path_report,
         file_size_limit_mb,
         folder_path_videos_splitted,
         duration_limit,
     )
 
-    if reencode_plan == 'group':
+    if reencode_plan == "group":
         # join all videos
-        mass_videojoin.set_join_videos(
+        vidtool.set_join_videos(
             file_path_report,
             file_size_limit_mb,
             filename_output,
@@ -242,7 +223,7 @@ def run_silent_mode(folder_path_report,
 
     ################################### p5
 
-    if reencode_plan == 'group':
+    if reencode_plan == "group":
 
         # make descriptions.xlsx and summary.txt
         timestamp_link_maker(
@@ -254,47 +235,55 @@ def run_silent_mode(folder_path_report,
             descriptions_auto_adapt=descriptions_auto_adapt,
         )
 
-        # fmt: off
         update_description_summary.main(
             path_summary_top,
             folder_path_project,
             document_hashtag,
-            document_title
+            document_title,
         )
     else:
         # create descriptions.xlsx for single reencode
         single_mode.single_description_summary(
             folder_path_output=folder_path_project,
             file_path_report_origin=file_path_report,
-            dict_summary=dict_summary)
+            dict_summary=dict_summary,
+        )
 
-        # fmt: off
         update_description_summary.main(
             path_summary_top,
             folder_path_project,
             document_hashtag,
-            document_title
+            document_title,
         )
 
     # make header project
     header_maker(folder_path_project)
 
     # Check if has warnings
-    # fmt: off
-    has_warning = \
-        utils_timestamp.check_descriptions_warning(folder_path_project)
+
+    has_warning = utils_timestamp.check_descriptions_warning(
+        folder_path_project
+    )
     if has_warning:
-        input('\nThere are warnings in the file "descriptions.xlsx".' +
-                'Correct before the next step.')
+        input(
+            '\nThere are warnings in the file "descriptions.xlsx".'
+            + "Correct before the next step."
+        )
     else:
         pass
 
     ################################### p6
 
-    dict_config = config_data.config_data()
+    # TODO: config do tgsender
+    # dict_config = config_data.config_data()
+    folder_script_path = utils.get_folder_script_path()
+    path_file_config = os.path.join(folder_script_path, "config.ini")
+    config = utils.get_config_data(path_file_config)
+    dict_config = config
+
     print(f"\nProject: {folder_path_project}\n")
 
-    telegram_filesender.send_via_telegram_api(folder_path_project, dict_config)
+    tgsender.send_via_telegram_api(Path(folder_path_project), dict_config)
 
     # Post and Pin summary
     autopost_summary.run(folder_path_project)
@@ -323,16 +312,16 @@ def main():
     activate_transition = config["activate_transition"]
     start_index = int(config["start_index"])
     hashtag_index = config["hashtag_index"]
-    reencode_plan = config['reencode_plan']
+    reencode_plan = config["reencode_plan"]
 
     descriptions_auto_adapt_str = config["descriptions_auto_adapt"]
-    if descriptions_auto_adapt_str == 'true':
+    if descriptions_auto_adapt_str == "true":
         descriptions_auto_adapt = True
     else:
         descriptions_auto_adapt = False
 
-    silent_mode_str = config['silent_mode']
-    if silent_mode_str == 'true':
+    silent_mode_str = config["silent_mode"]
+    if silent_mode_str == "true":
         silent_mode = True
     else:
         silent_mode = False
@@ -342,10 +331,9 @@ def main():
     document_hashtag = config["document_hashtag"]
     document_title = config["document_title"]
 
-
     dict_summary = {}
-    dict_summary["path_summary_top"] = path_summary_top
-    dict_summary["path_summary_bot"] = path_summary_bot
+    dict_summary["path_summary_top"] = Path("user") / path_summary_top
+    dict_summary["path_summary_bot"] = Path("user") / path_summary_bot
 
     file_path_report = None
     folder_path_report = None
@@ -353,26 +341,28 @@ def main():
 
     if silent_mode:
         while True:
-            ensure_silent_mode = input('Continue to silent mode? (y/n) ')
-            if ensure_silent_mode != 'y' and ensure_silent_mode != '':
+            ensure_silent_mode = input("Continue to silent mode? (y/n) ")
+            if ensure_silent_mode != "y" and ensure_silent_mode != "":
                 break
-            run_silent_mode(folder_path_report,
-                            file_path_report,
-                            list_video_extensions,
-                            file_size_limit_mb,
-                            duration_limit,
-                            start_index,
-                            activate_transition,
-                            hashtag_index,
-                            dict_summary,
-                            descriptions_auto_adapt,
-                            path_summary_top,
-                            document_hashtag,
-                            document_title,
-                            reencode_plan,
-                            mode)
-            input('\nProject processed and sent to Telegram')
-            mass_videojoin.clean_cmd()
+            run_silent_mode(
+                folder_path_report,
+                file_path_report,
+                list_video_extensions,
+                file_size_limit_mb,
+                duration_limit,
+                start_index,
+                activate_transition,
+                hashtag_index,
+                dict_summary,
+                descriptions_auto_adapt,
+                path_summary_top,
+                document_hashtag,
+                document_title,
+                reencode_plan,
+                mode,
+            )
+            input("\nProject processed and sent to Telegram")
+            vidtool.clean_cmd()
 
     while True:
         menu_answer = menu_ask()
@@ -381,32 +371,33 @@ def main():
         if menu_answer == 1:
             # Zip not video files
 
-            # fmt: off
-            folder_path_report = \
-                mass_videojoin.get_path_dir(folder_path_report)
-            file_path_report = \
-                mass_videojoin.set_path_file_report(folder_path_report)
+            folder_path_report = vidtool.get_folder_path(folder_path_report)
+            file_path_report = vidtool.set_path_file_report(folder_path_report)
             folder_path_project = os.path.dirname(file_path_report)
 
             if os.path.isdir(folder_path_report) is False:
                 input("\nThe folder does not exist.")
-                mass_videojoin.clean_cmd()
+                vidtool.clean_cmd()
                 continue
 
             file_size_limit_mb = define_mb_per_file(
                 path_file_config, file_size_limit_mb
             )
 
-            # fmt: off
-            if zipind.ensure_folder_sanitize(folder_path_report,
-                                             max_path) is False:
-                mass_videojoin.clean_cmd()
+            if (
+                zipind.zipind.ensure_folder_sanitize(
+                    folder_path_report, max_path
+                )
+                is False
+            ):
+                vidtool.clean_cmd()
                 continue
 
-            folder_path_output = os.path.join(folder_path_project,
-                                              "output_videos")
+            folder_path_output = os.path.join(
+                folder_path_project, "output_videos"
+            )
             utils.ensure_folder_existence([folder_path_output])
-            zipind_core.zipind(
+            zipind.zipind_core.run(
                 path_dir=folder_path_report,
                 mb_per_file=file_size_limit_mb,
                 path_dir_output=folder_path_output,
@@ -417,34 +408,32 @@ def main():
             # break_point
             input("\nZip files created.")
 
-            mass_videojoin.clean_cmd()
+            vidtool.clean_cmd()
             continue
 
         # 2-Generate worksheet listing the files
         # create Dataframe of video details
         elif menu_answer == 2:
 
-            # fmt: off
-            folder_path_report = \
-                mass_videojoin.get_path_dir(folder_path_report)
-            file_path_report = \
-                mass_videojoin.set_path_file_report(folder_path_report)
+            folder_path_report = vidtool.get_folder_path(folder_path_report)
+            file_path_report = vidtool.set_path_file_report(folder_path_report)
 
-            mass_videojoin.step_create_report_filled(
+            vidtool.step_create_report_filled(
                 folder_path_report,
                 file_path_report,
                 list_video_extensions,
-                reencode_plan
+                reencode_plan,
             )
 
-            # fmt: off
-            print("\nIf necessary, change the reencode plan in the column "
-                  '"video_resolution_to_change"')
+            print(
+                "\nIf necessary, change the reencode plan in the column "
+                '"video_resolution_to_change"'
+            )
 
             # break_point
             input("Type Enter to continue")
 
-            mass_videojoin.clean_cmd()
+            vidtool.clean_cmd()
             continue
 
         # 3-reencode videos and recheck duration
@@ -453,35 +442,34 @@ def main():
         elif menu_answer == 3:
 
             # define variables
-            # fmt: off
-            folder_path_report = \
-                mass_videojoin.get_path_dir(folder_path_report)
+            folder_path_report = vidtool.get_folder_path(folder_path_report)
 
-            file_path_report = \
-                mass_videojoin.set_path_file_report(folder_path_report)
+            file_path_report = vidtool.set_path_file_report(folder_path_report)
 
-            folder_path_videos_encoded = \
-                mass_videojoin.set_path_folder_videos_encoded(folder_path_report)
-            mass_videojoin.ensure_folder_existence([folder_path_videos_encoded])
+            folder_path_videos_encoded = (
+                vidtool.set_path_folder_videos_encoded(folder_path_report)
+            )
+            vidtool.ensure_folder_existence([folder_path_videos_encoded])
 
             # reencode videos mark in column video_resolution_to_change
-            mass_videojoin.set_make_reencode(file_path_report,
-                                             folder_path_videos_encoded)
+            vidtool.set_make_reencode(
+                file_path_report, folder_path_videos_encoded
+            )
 
             # play_sound()
 
             # correct videos duration
-            if reencode_plan == 'group':
+            if reencode_plan == "group":
                 print("start correcting the duration metadata")
-                mass_videojoin.set_correct_duration(file_path_report)
+                vidtool.set_correct_duration(file_path_report)
 
                 # break_point
-                print('Duration metadata corrected.')
+                print("Duration metadata corrected.")
             input(
                 "Type something to go to the main menu, "
                 + 'and proceed to the "Group videos" process.'
             )
-            mass_videojoin.clean_cmd()
+            vidtool.clean_cmd()
             continue
 
         # 4-join videos
@@ -489,57 +477,58 @@ def main():
         elif menu_answer == 4:
 
             # define variables
-            # fmt: off
-            folder_path_report = \
-                mass_videojoin.get_path_dir(folder_path_report)
-            # fmt: off
-            file_path_report = \
-                mass_videojoin.set_path_file_report(folder_path_report)
-            # fmt: off
-            folder_path_videos_splitted = \
-                mass_videojoin.set_path_folder_videos_splitted(folder_path_report)
 
-            # fmt: off
-            mass_videojoin.ensure_folder_existence([folder_path_videos_splitted])
-            # fmt: off
-            folder_path_videos_joined = \
-                mass_videojoin.set_path_folder_videos_joined(folder_path_report)
+            folder_path_report = vidtool.get_folder_path(folder_path_report)
 
-            mass_videojoin.ensure_folder_existence([folder_path_videos_joined])
+            file_path_report = vidtool.set_path_file_report(folder_path_report)
 
-            filename_output = mass_videojoin.get_folder_name_normalized(
+            folder_path_videos_splitted = (
+                vidtool.set_path_folder_videos_splitted(folder_path_report)
+            )
+
+            vidtool.ensure_folder_existence([folder_path_videos_splitted])
+
+            folder_path_videos_joined = vidtool.set_path_folder_videos_joined(
                 folder_path_report
             )
 
-            # fmt: off
-            folder_path_videos_cache = \
-                mass_videojoin.set_path_folder_videos_cache(folder_path_report)
+            vidtool.ensure_folder_existence([folder_path_videos_joined])
 
-            mass_videojoin.ensure_folder_existence([folder_path_videos_cache])
+            filename_output = vidtool.get_folder_name_normalized(
+                folder_path_report
+            )
 
-            if not mass_videojoin.join_process_has_started(file_path_report):
-                if reencode_plan == 'group':
+            folder_path_videos_cache = vidtool.set_path_folder_videos_cache(
+                folder_path_report
+            )
+
+            vidtool.ensure_folder_existence([folder_path_videos_cache])
+
+            if not vidtool.join_process_has_started(file_path_report):
+                if reencode_plan == "group":
                     # Fill group_column.
                     #  Establishes separation criteria for the join videos step
-                    mass_videojoin.set_group_column(file_path_report)
+                    vidtool.set_group_column(file_path_report)
 
                     # break_point
-                    # fmt: off
-                    input("Review the file and then type something to "
-                          "start the process that look for videos that "
-                          "are too big and should be splitted")
+
+                    input(
+                        "Review the file and then type something to "
+                        "start the process that look for videos that "
+                        "are too big and should be splitted"
+                    )
 
                 # split videos too big
-                mass_videojoin.set_split_videos(
+                vidtool.set_split_videos(
                     file_path_report,
                     file_size_limit_mb,
                     folder_path_videos_splitted,
                     duration_limit,
                 )
 
-            if reencode_plan == 'group':
+            if reencode_plan == "group":
                 # join all videos
-                mass_videojoin.set_join_videos(
+                vidtool.set_join_videos(
                     file_path_report,
                     file_size_limit_mb,
                     filename_output,
@@ -553,12 +542,12 @@ def main():
                 # play_sound()
 
                 # break_point
-                # fmt: off
-                input('\nAll videos were grouped. '
-                      'Go to the "Make Time Stamps" step.')
+
+                print("\nAll videos were grouped")
             else:
                 pass
-            mass_videojoin.clean_cmd()
+            input('Go to the "Make Time Stamps" step.')
+            vidtool.clean_cmd()
             continue
 
         # '5-Make Descriptions report with timestamps, summary.txt
@@ -568,17 +557,13 @@ def main():
 
             # define variables
 
-            # fmt: off
-            folder_path_report = \
-                mass_videojoin.get_path_dir(folder_path_report)
+            folder_path_report = vidtool.get_folder_path(folder_path_report)
 
-            # fmt: off
-            file_path_report = \
-                mass_videojoin.set_path_file_report(folder_path_report)
+            file_path_report = vidtool.set_path_file_report(folder_path_report)
 
             folder_path_project = os.path.dirname(file_path_report)
 
-            if reencode_plan == 'group':
+            if reencode_plan == "group":
                 # make descriptions.xlsx and summary.txt
                 timestamp_link_maker(
                     folder_path_output=folder_path_project,
@@ -589,26 +574,25 @@ def main():
                     descriptions_auto_adapt=descriptions_auto_adapt,
                 )
 
-                # fmt: off
                 update_description_summary.main(
                     path_summary_top,
                     folder_path_project,
                     document_hashtag,
-                    document_title
+                    document_title,
                 )
             else:
-                #create descriptions.xlsx for single reencode
+                # create descriptions.xlsx for single reencode
                 single_mode.single_description_summary(
                     folder_path_output=folder_path_project,
                     file_path_report_origin=file_path_report,
-                    dict_summary=dict_summary)
+                    dict_summary=dict_summary,
+                )
 
-                # fmt: off
                 update_description_summary.main(
                     path_summary_top,
                     folder_path_project,
                     document_hashtag,
-                    document_title
+                    document_title,
                 )
 
             # make header project
@@ -616,16 +600,19 @@ def main():
             print("\nTimeStamp and descriptions files created.")
 
             # Check if has warnings
-            # fmt: off
-            has_warning = \
-                utils_timestamp.check_descriptions_warning(folder_path_project)
+
+            has_warning = utils_timestamp.check_descriptions_warning(
+                folder_path_project
+            )
             if has_warning:
-                input('\nThere are warnings in the file "descriptions.xlsx".' +
-                      'Correct before the next step.')
+                input(
+                    '\nThere are warnings in the file "descriptions.xlsx".'
+                    + "Correct before the next step."
+                )
             else:
                 # break point
                 input("\nType something to go to the main menu")
-            mass_videojoin.clean_cmd()
+            vidtool.clean_cmd()
             continue
 
         # '6-Auto-send to Telegram'
@@ -633,32 +620,30 @@ def main():
             # file sender
 
             # define variables
-            # fmt: off
-            folder_path_report = \
-                mass_videojoin.get_path_dir(folder_path_report)
 
-            # fmt: off
-            file_path_report = \
-                mass_videojoin.set_path_file_report(folder_path_report)
+            folder_path_report = vidtool.get_folder_path(folder_path_report)
 
-            # fmt: off
-            folder_path_project = \
-                os.path.dirname(file_path_report)
+            file_path_report = vidtool.set_path_file_report(folder_path_report)
+
+            folder_path_project = os.path.dirname(file_path_report)
 
             # Generate config_data dictionary from config_data
-            #  in repo telegram_filesender
-            dict_config = config_data.config_data()
+            #  in repo tgsender
+            # dict_config = config_data.config_data()
+            dict_config = config
             print(f"\nProject: {folder_path_project}\n")
 
             # Send project
-            telegram_filesender.main(folder_path_project, dict_config)
+            tgsender.send_via_telegram_api(
+                Path(folder_path_project), dict_config
+            )
 
-                # Post and Pin summary
+            # Post and Pin summary
             autopost_summary.run(folder_path_project)
 
             # break_point
             input("All files were sent to the telegram")
-            mass_videojoin.clean_cmd()
+            vidtool.clean_cmd()
             return
 
 

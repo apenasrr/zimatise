@@ -1,7 +1,5 @@
 import os
 
-import pandas as pd
-
 from . import single_mode_description, single_mode_summary
 
 
@@ -17,12 +15,12 @@ def single_description_summary(
 ):
 
     # create description
-    df = pd.read_excel(file_path_report_origin, engine="openpyxl")
+    # df = pd.read_csv(file_path_report_origin)
     df_desc = single_mode_description.create_df_descriptions(
         file_path_report_origin
     )
-    description_path = os.path.join(folder_path_output, "descriptions.xlsx")
-    df_desc.to_excel(description_path, index=False)
+    description_path = os.path.join(folder_path_output, "upload_plan.csv")
+    df_desc.to_csv(description_path, index=False)
 
     # create summary
     summary_content = single_mode_summary.main(

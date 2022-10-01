@@ -26,9 +26,8 @@ and highly customizable
 
 ## Requirements:
 -https://github.com/apenasrr/zipind \
--https://github.com/apenasrr/mass_videojoin \
--https://github.com/apenasrr/timestamp_link_maker \
--https://github.com/apenasrr/telegram_filesender
+-https://github.com/apenasrr/vidtool \
+-https://github.com/apenasrr/tgsender
 
 
 ## How to use

@@ -1,10 +1,9 @@
 import os
 
-import utils
+import tgsender
+import vidtool
 
-utils.add_path_script_folders(["mass_videojoin", "telegram_filesender"])
-import api_telegram
-import mass_videojoin
+import utils
 
 
 def get_chat_id(folder_path_summary):
@@ -23,11 +22,46 @@ def get_chat_id(folder_path_summary):
     return chat_id
 
 
+def get_list_content(content: str) -> list:
+    """Split content by breakline into blocks of up to 4000 characters
+
+    Args:
+        content (str): content
+
+    Returns:
+        list: list of content limited to 4000 characters
+    """
+
+    if len(content) > 4000:
+        list_general_line = content.split("\n")
+
+        list_content = []
+        list_block_line = []
+        for line in list_general_line:
+            new_state = "\n".join(list_block_line) + "\n" + line
+            if len(new_state) < 4000:
+                list_block_line.append(line)
+            else:
+                list_content.append("\n".join(list_block_line))
+                list_block_line = []
+                list_block_line.append(line)
+
+        if len(list_block_line) > 0:
+            list_content.append("\n".join(list_block_line))
+    else:
+        list_content = [content]
+
+    return list_content
+
+
 def send_summary(chat_id, summary_content):
 
-    message_obj = api_telegram.send_message(chat_id, summary_content)
-    message_id = message_obj.id
-    return message_id
+    list_content = get_list_content(summary_content)
+    for index, content in enumerate(list_content):
+        message_obj = tgsender.api.send_message(chat_id, content)
+        if index == 0:
+            first_message_id = message_obj.id
+    return first_message_id
 
 
 def get_summary_content(folder_path_summary):
@@ -39,7 +73,7 @@ def get_summary_content(folder_path_summary):
 
 def pin_summary_post(chat_id, summary_post_id):
 
-    api_telegram.pin_chat_message(chat_id, summary_post_id)
+    tgsender.api.pin_chat_message(chat_id, summary_post_id)
 
 
 def run(folder_path_summary):
@@ -57,7 +91,7 @@ def run(folder_path_summary):
 
 def main(folder_path_project):
 
-    file_path_report = mass_videojoin.set_path_file_report(folder_path_project)
+    file_path_report = vidtool.set_path_file_report(folder_path_project)
     folder_path_report = os.path.dirname(file_path_report)
 
     run(folder_path_report)

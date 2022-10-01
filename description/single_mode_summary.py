@@ -179,7 +179,7 @@ def get_txt_content(file_path):
 
 def get_mid(path_report):
 
-    df_report = pd.read_excel(path_report, engine="openpyxl")
+    df_report = pd.read_csv(path_report)
     serie_folder_path = df_report["file_path_folder_origin"]
     serie_hashtag = get_serie_hashtag(size=serie_folder_path.shape[0])
 

@@ -4,13 +4,15 @@ import sys
 from configparser import ConfigParser
 
 import pandas as pd
+import vidtool
 
 
 def add_path_script_folders(list_folders_name):
 
     list_repo_dont_found = []
     for folder_name in list_folders_name:
-        path_script_folder = os.path.abspath(os.path.join("..", folder_name))
+        path_active_folder = os.path.dirname(os.path.realpath(__file__))
+        path_script_folder = os.path.abspath(os.path.join(path_active_folder, "..", folder_name))
         existence = os.path.isdir(path_script_folder)
         if existence is False:
             list_repo_dont_found.append(path_script_folder)
@@ -31,13 +33,6 @@ def add_path_script_folders(list_folders_name):
             + f"name.\n{str_list_repo_dont_found}\n"
         )
         exit()
-
-
-try:
-    import mass_videojoin
-except:
-    add_path_script_folders(["mass_videojoin"])
-    import mass_videojoin
 
 
 def show_projects_queue(header, list_project_path):
@@ -120,7 +115,7 @@ def get_folder_path_project_process(project_path):
 
     # fmt: off
     folder_name_normalized = \
-        mass_videojoin.get_folder_name_normalized(project_path)
+        vidtool.get_folder_name_normalized(project_path)
 
     folder_path_output_relative = "output_" + folder_name_normalized.strip("_")
     ensure_folder_existence(["projects"])
@@ -240,7 +235,7 @@ def ensure_folder_existence(folders_path):
 
 def get_txt_content(file_path):
 
-    list_encode = ["utf-8", "ISO-8859-1"]  # utf8, ansi
+    list_encode = ["utf-8-sig", "ISO-8859-1"]  # utf8, ansi
     for encode in list_encode:
         try:
             file = open(file_path, "r", encoding=encode)
