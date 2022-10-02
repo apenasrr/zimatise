@@ -12,7 +12,9 @@ def add_path_script_folders(list_folders_name):
     list_repo_dont_found = []
     for folder_name in list_folders_name:
         path_active_folder = os.path.dirname(os.path.realpath(__file__))
-        path_script_folder = os.path.abspath(os.path.join(path_active_folder, "..", folder_name))
+        path_script_folder = os.path.abspath(
+            os.path.join(path_active_folder, "..", folder_name)
+        )
         existence = os.path.isdir(path_script_folder)
         if existence is False:
             list_repo_dont_found.append(path_script_folder)
@@ -113,16 +115,14 @@ def clean_cmd():
 
 def get_folder_path_project_process(project_path):
 
-    # fmt: off
-    folder_name_normalized = \
-        vidtool.get_folder_name_normalized(project_path)
+    folder_name_normalized = vidtool.get_folder_name_normalized(project_path)
 
     folder_path_output_relative = "output_" + folder_name_normalized.strip("_")
     ensure_folder_existence(["projects"])
 
-    # fmt: off
-    folder_path_project_process = \
-        os.path.join("projects", folder_path_output_relative)
+    folder_path_project_process = os.path.join(
+        "projects", folder_path_output_relative
+    )
     ensure_folder_existence([folder_path_project_process])
     return folder_path_project_process
 
@@ -188,9 +188,9 @@ def test_folders_has_path_long(list_folder_path, max_path=260):
         dict_folders_path = {}
         dict_folders_path["folder_path"] = folder_path
 
-        # fmt: off
-        dict_folders_path["list_file_path_long"] = \
-            dict_result_test_file_path_long["list_file_path_long"]
+        dict_folders_path[
+            "list_file_path_long"
+        ] = dict_result_test_file_path_long["list_file_path_long"]
 
         if dict_result_test_file_path_long["result"]:
             list_folder_path_approved.append(dict_folders_path)
@@ -272,9 +272,10 @@ def format_time_delta(time_delta):
 def compile_template(d_keys, template_content):
 
     for key in d_keys.keys():
-        # fmt: off
-        template_content = \
-            template_content.replace("{" + key + "}", d_keys[key])
+
+        template_content = template_content.replace(
+            "{" + key + "}", d_keys[key]
+        )
 
     output_content = template_content
     return output_content

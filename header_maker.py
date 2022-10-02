@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 import os
 from pathlib import Path
@@ -23,6 +25,64 @@ def logging_config():
     console.setFormatter(formatter)
     # add the handler to the root logger
     logging.getLogger("").addHandler(console)
+
+
+def check_col_unique_values(serie):
+
+    serie_unique = serie.drop_duplicates(keep="first")
+    list_unique_values = serie_unique.unique().tolist()
+    qt_unique_values = len(list_unique_values)
+    if qt_unique_values == 1:
+        return True
+    else:
+        return False
+
+
+def get_serie_name_project(df_folder):
+
+    len_cols = len(df_folder.columns)
+    for n_col in range(len_cols):
+        serie = df_folder.iloc[:, n_col]
+        col_has_one_unique_value = check_col_unique_values(serie)
+        if col_has_one_unique_value is False:
+            name_col = df_folder.columns[n_col - 1]
+            serie_name_project = df_folder[name_col]
+            return serie_name_project
+    # If you do not find a column with variable values,
+    #  it is because the project has no subfolders.
+    # Thus, the extraction of the folder name must be
+    #  through the last column in the dataframe
+    serie_name_project = df_folder.iloc[:, len_cols - 1]
+    return serie_name_project
+
+
+def explode_parts_serie_path(path_serie: pd.Series) -> pd.DataFrame:
+    """Converts a series of Path into a dataframe with each column being a part
+    of the Path
+
+    Args:
+        path_serie (pd.Series): Pathlib.path serie
+
+    Returns:
+        pd.DataFrame: columns with each part of Path
+    """
+
+    list_dict = path_serie.apply(lambda x: Path(x).parts).to_list()
+    return pd.DataFrame(list_dict)
+
+
+def get_project_name(df):
+    """
+    Includes to the right of the DataFrame, columns corresponding to each
+     depth level of the folder structure of the origin files
+    :df: DataFrame. Requires column 'file_path_folder_origin'
+    """
+
+    path_serie = df["file_path_folder_origin"]
+    df_folder = explode_parts_serie_path(path_serie)
+    serie_name_project = get_serie_name_project(df_folder)
+    project_name = serie_name_project.tolist()[0]
+    return project_name
 
 
 def get_list_video_details_path_file(path_dir, file_name):
@@ -59,46 +119,6 @@ def get_duration_filesize_gross(df):
     duration = duration_sum
     file_size = file_size_sum_mb
     return duration, file_size
-
-
-def get_serie_name_project(df_folder):
-    def check_col_unique_values(serie):
-
-        serie_unique = serie.drop_duplicates(keep="first")
-        list_unique_values = serie_unique.unique().tolist()
-        qt_unique_values = len(list_unique_values)
-        if qt_unique_values == 1:
-            return True
-        else:
-            return False
-
-    len_cols = len(df_folder.columns)
-    for n_col in range(len_cols):
-        serie = df_folder.iloc[:, n_col]
-        col_has_one_unique_value = check_col_unique_values(serie)
-        if col_has_one_unique_value is False:
-            name_col = df_folder.columns[n_col - 1]
-            serie_name_project = df_folder[name_col]
-            return serie_name_project
-    # If you do not find a column with variable values,
-    #  it is because the project has no subfolders.
-    # Thus, the extraction of the folder name must be
-    #  through the last column in the dataframe
-    serie_name_project = df_folder.iloc[:, len_cols - 1]
-    return serie_name_project
-
-
-def get_project_name(df):
-    """
-    Includes to the right of the DataFrame, columns corresponding to each
-     depth level of the folder structure of the origin files
-    :df: DataFrame. Requires column 'file_path_folder_origin'
-    """
-
-    df_folder = df["file_path_folder_origin"].str.split("\\", expand=True)
-    serie_name_project = get_serie_name_project(df_folder)
-    project_name = serie_name_project.tolist()[0]
-    return project_name
 
 
 def get_duration_filesize(df):

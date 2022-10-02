@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from . import single_mode_description, single_mode_summary
 
@@ -33,9 +34,11 @@ def single_description_summary(
 def get_df_description_single_mode(df):
 
     df_desc = df.loc[:, ["file_path_folder", "file_name", "subfolder_n1"]]
-    df_desc["file_output"] = (
-        df_desc["file_path_folder"] + "\\" + df_desc["file_name"]
+
+    df_desc["file_output"] = df_desc[["file_path_folder", "file_name"]].apply(
+        lambda row: Path(*row), axis=1
     )
+
     df_desc["description"] = (
         df_desc["subfolder_n1"] + "\n" + df_desc["file_name"]
     )

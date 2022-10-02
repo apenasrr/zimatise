@@ -3,7 +3,7 @@ import sys
 
 import pandas as pd
 
-from . import path_parser
+from . import path_parser, utils
 
 
 def get_serie_hashtag(size: int) -> pd.Series:
@@ -45,16 +45,6 @@ def get_serie_folder_path_relative(serie_folder_path, max_depth=0):
         serie_folder_path (pandas.Series): Series to be parsed
     """
 
-    def check_col_unique_values(serie):
-
-        serie_unique = serie.drop_duplicates(keep="first")
-        list_unique_values = serie_unique.unique().tolist()
-        qt_unique_values = len(list_unique_values)
-        if qt_unique_values == 1:
-            return True
-        else:
-            return False
-
     def join_folders(row):
 
         list_folders = list(row)
@@ -67,14 +57,15 @@ def get_serie_folder_path_relative(serie_folder_path, max_depth=0):
             return None
 
     # create dataframe with columns as sequencial integer and folders as values
-    df = serie_folder_path.str.split("\\", expand=True)
+    df = utils.explode_parts_serie_path(serie_folder_path)
+
     len_cols = len(df.columns)
 
     list_index_col_root = []
     for n_col in range(len_cols - 1):
         serie = df.iloc[:, n_col]
         # check for column with more than 1 unique value (folder root)
-        col_has_one_unique_value = check_col_unique_values(serie)
+        col_has_one_unique_value = utils.check_col_unique_values(serie)
         if col_has_one_unique_value:
             # name col is a sequencial integer
             name_col = df.columns[n_col]

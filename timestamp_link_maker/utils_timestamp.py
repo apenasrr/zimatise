@@ -1,8 +1,24 @@
 import logging
 import os
 from configparser import ConfigParser
+from pathlib import Path
 
 import pandas as pd
+
+
+def explode_parts_serie_path(path_serie: pd.Series) -> pd.DataFrame:
+    """Converts a series of Path into a dataframe with each column being a part
+    of the Path
+
+    Args:
+        path_serie (pd.Series): Pathlib.path serie
+
+    Returns:
+        pd.DataFrame: columns with each part of Path
+    """
+
+    list_dict = path_serie.apply(lambda x: Path(x).parts).to_list()
+    return pd.DataFrame(list_dict)
 
 
 def adapt_description_to_limit(df):
