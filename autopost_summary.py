@@ -1,4 +1,6 @@
+import asyncio
 import os
+import time
 
 import tgsender
 import vidtool
@@ -58,7 +60,9 @@ def send_summary(chat_id, summary_content):
 
     list_content = get_list_content(summary_content)
     for index, content in enumerate(list_content):
-        message_obj = tgsender.api.send_message(chat_id, content)
+        message_obj = asyncio.run(
+            tgsender.api_async.send_message(chat_id, content)
+        )
         if index == 0:
             first_message_id = message_obj.id
     return first_message_id
@@ -73,7 +77,7 @@ def get_summary_content(folder_path_summary):
 
 def pin_summary_post(chat_id, summary_post_id):
 
-    tgsender.api.pin_chat_message(chat_id, summary_post_id)
+    asyncio.run(tgsender.api_async.pin_chat_message(chat_id, summary_post_id))
 
 
 def run(folder_path_summary):
@@ -86,6 +90,7 @@ def run(folder_path_summary):
     summary_content = get_summary_content(folder_path_summary)
     chat_id = get_chat_id(folder_path_summary)
     summary_post_id = send_summary(chat_id, summary_content)
+    time.sleep(3)
     pin_summary_post(chat_id, summary_post_id)
 
 

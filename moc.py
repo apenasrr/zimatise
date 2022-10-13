@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 
@@ -8,7 +9,11 @@ from utils import compile_template, get_txt_content
 
 def send_header(moc_chat_id: int, header_content: str):
 
-    tgsender.api.send_message(chat_id=moc_chat_id, text=header_content)
+    asyncio.run(
+        tgsender.api_async.send_message(
+            chat_id=moc_chat_id, text=header_content
+        )
+    )
 
 
 def get_chat_invite_link(folder_path_project: str):

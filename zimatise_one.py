@@ -33,6 +33,7 @@
     https://www.activism.net/cypherpunk/manifesto.html -  How encryption is essential to Free Speech and Privacy
 """
 
+import asyncio
 import logging
 import os
 from pathlib import Path
@@ -59,7 +60,7 @@ def logging_config():
     )
     # set up logging to console
     console = logging.StreamHandler()
-    console.setLevel(logging.INFO)
+    console.setLevel(logging.WARNING)
     # set a format which is simpler for console use
     formatter = logging.Formatter(" %(asctime)s-%(levelname)s-%(message)s")
     console.setFormatter(formatter)
@@ -274,7 +275,7 @@ def run_silent_mode(
 
     ################################### p6
 
-    # TODO: config do tgsender
+    # TODO: tgsender config
     # dict_config = config_data.config_data()
     folder_script_path = utils.get_folder_script_path()
     path_file_config = os.path.join(folder_script_path, "config.ini")
@@ -283,7 +284,12 @@ def run_silent_mode(
 
     print(f"\nProject: {folder_path_project}\n")
 
-    tgsender.send_via_telegram_api(Path(folder_path_project), dict_config)
+    # TODO: call tgsender.main
+    asyncio.run(
+        tgsender.send_via_telegram_api_async(
+            Path(folder_path_project), dict_config
+        )
+    )
 
     # Post and Pin summary
     autopost_summary.run(folder_path_project)
@@ -326,14 +332,14 @@ def main():
     else:
         silent_mode = False
 
-    path_summary_top = config["path_summary_top"]
-    path_summary_bot = config["path_summary_bot"]
+    path_summary_top = Path("user") / config["path_summary_top"]
+    path_summary_bot = Path("user") / config["path_summary_bot"]
     document_hashtag = config["document_hashtag"]
     document_title = config["document_title"]
 
     dict_summary = {}
-    dict_summary["path_summary_top"] = Path("user") / path_summary_top
-    dict_summary["path_summary_bot"] = Path("user") / path_summary_bot
+    dict_summary["path_summary_top"] = path_summary_top
+    dict_summary["path_summary_bot"] = path_summary_bot
 
     file_path_report = None
     folder_path_report = None
@@ -633,9 +639,12 @@ def main():
             dict_config = config
             print(f"\nProject: {folder_path_project}\n")
 
+            # TODO: Enable sending files in macro keyboard mode
             # Send project
-            tgsender.send_via_telegram_api(
-                Path(folder_path_project), dict_config
+            asyncio.run(
+                tgsender.send_via_telegram_api_async(
+                    Path(folder_path_project), dict_config
+                )
             )
 
             # Post and Pin summary

@@ -46,7 +46,7 @@ def create_text_desc(row):
         list_folder_lines = []
         for index, folder in enumerate(list_folder):
             if folder:
-                list_folder_lines.append("-" * (index) + folder)
+                list_folder_lines.append("=" * (index) + folder)
         return list_folder_lines
 
     folder_relative = row["folder_relative"]

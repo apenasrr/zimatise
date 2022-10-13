@@ -10,7 +10,10 @@ def get_list_zips_file_path(folder_path):
     for root, _, files in os.walk(folder_path):
         for file_ in files:
             file_lower = file_.lower()
-            if file_lower.endswith(tuple([".zip", ".rar", ".7z"])):
+            if (
+                file_lower.endswith(tuple([".zip", ".rar", ".7z"]))
+                or ".zip" in file_lower
+            ):
                 file_path_zip = os.path.join(root, file_)
                 list_file_path_zip.append(file_path_zip)
     return list_file_path_zip
