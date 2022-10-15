@@ -125,7 +125,7 @@ def define_mb_per_file(path_file_config, file_size_limit_mb):
 
 
 def run_silent_mode(
-    folder_path_report,
+    folder_path_project,
     file_path_report,
     list_video_extensions,
     file_size_limit_mb,
@@ -142,16 +142,16 @@ def run_silent_mode(
     mode,
 ):
 
-    folder_path_report = vidtool.get_folder_path(folder_path_report)
-    file_path_report = vidtool.set_path_file_report(folder_path_report)
-    folder_path_project = os.path.dirname(file_path_report)
+    folder_path_project = vidtool.get_folder_path(folder_path_project)
+    file_path_report = vidtool.set_path_file_report(folder_path_project)
+    folder_path_report = os.path.dirname(file_path_report)
 
-    folder_path_output = os.path.join(folder_path_project, "output_videos")
+    folder_path_output = os.path.join(folder_path_report, "output_videos")
 
     ################################### p1
     utils.ensure_folder_existence([folder_path_output])
     zipind.zipind_core.run(
-        path_dir=folder_path_report,
+        path_dir=folder_path_project,
         mb_per_file=file_size_limit_mb,
         path_dir_output=folder_path_output,
         mode=mode,
@@ -160,14 +160,14 @@ def run_silent_mode(
 
     ################################### p2
     vidtool.step_create_report_filled(
-        folder_path_report,
+        folder_path_project,
         file_path_report,
         list_video_extensions,
         reencode_plan,
     )
     ################################### p3
     folder_path_videos_encoded = vidtool.set_path_folder_videos_encoded(
-        folder_path_report
+        folder_path_project
     )
     vidtool.ensure_folder_existence([folder_path_videos_encoded])
 
@@ -177,21 +177,21 @@ def run_silent_mode(
     ################################### p4
 
     folder_path_videos_splitted = vidtool.set_path_folder_videos_splitted(
-        folder_path_report
+        folder_path_project
     )
 
     vidtool.ensure_folder_existence([folder_path_videos_splitted])
 
     folder_path_videos_joined = vidtool.set_path_folder_videos_joined(
-        folder_path_report
+        folder_path_project
     )
 
     vidtool.ensure_folder_existence([folder_path_videos_joined])
 
-    filename_output = vidtool.get_folder_name_normalized(folder_path_report)
+    filename_output = vidtool.get_folder_name_normalized(folder_path_project)
 
     folder_path_videos_cache = vidtool.set_path_folder_videos_cache(
-        folder_path_report
+        folder_path_project
     )
 
     vidtool.ensure_folder_existence([folder_path_videos_cache])
@@ -228,7 +228,7 @@ def run_silent_mode(
 
         # make descriptions.xlsx and summary.txt
         timestamp_link_maker(
-            folder_path_output=folder_path_project,
+            folder_path_output=folder_path_report,
             file_path_report_origin=file_path_report,
             hashtag_index=hashtag_index,
             start_index_number=start_index,
@@ -238,32 +238,32 @@ def run_silent_mode(
 
         update_description_summary.main(
             path_summary_top,
-            folder_path_project,
+            folder_path_report,
             document_hashtag,
             document_title,
         )
     else:
         # create descriptions.xlsx for single reencode
         single_mode.single_description_summary(
-            folder_path_output=folder_path_project,
+            folder_path_output=folder_path_report,
             file_path_report_origin=file_path_report,
             dict_summary=dict_summary,
         )
 
         update_description_summary.main(
             path_summary_top,
-            folder_path_project,
+            folder_path_report,
             document_hashtag,
             document_title,
         )
 
     # make header project
-    header_maker(folder_path_project)
+    header_maker(folder_path_report)
 
     # Check if has warnings
 
     has_warning = utils_timestamp.check_descriptions_warning(
-        folder_path_project
+        folder_path_report
     )
     if has_warning:
         input(
@@ -282,17 +282,17 @@ def run_silent_mode(
     config = utils.get_config_data(path_file_config)
     dict_config = config
 
-    print(f"\nProject: {folder_path_project}\n")
+    print(f"\nProject: {folder_path_report}\n")
 
     # TODO: call tgsender.main
     asyncio.run(
         tgsender.send_via_telegram_api_async(
-            Path(folder_path_project), dict_config
+            Path(folder_path_report), dict_config
         )
     )
 
     # Post and Pin summary
-    autopost_summary.run(folder_path_project)
+    autopost_summary.run(folder_path_report)
 
 
 def main():
@@ -342,7 +342,7 @@ def main():
     dict_summary["path_summary_bot"] = path_summary_bot
 
     file_path_report = None
-    folder_path_report = None
+    folder_path_project = None
     utils.ensure_folder_existence(["projects"])
 
     if silent_mode:
@@ -351,7 +351,7 @@ def main():
             if ensure_silent_mode != "y" and ensure_silent_mode != "":
                 break
             run_silent_mode(
-                folder_path_report,
+                folder_path_project,
                 file_path_report,
                 list_video_extensions,
                 file_size_limit_mb,
@@ -377,11 +377,13 @@ def main():
         if menu_answer == 1:
             # Zip not video files
 
-            folder_path_report = vidtool.get_folder_path(folder_path_report)
-            file_path_report = vidtool.set_path_file_report(folder_path_report)
-            folder_path_project = os.path.dirname(file_path_report)
+            folder_path_project = vidtool.get_folder_path(folder_path_project)
+            file_path_report = vidtool.set_path_file_report(
+                folder_path_project
+            )
+            folder_path_report = os.path.dirname(file_path_report)
 
-            if os.path.isdir(folder_path_report) is False:
+            if os.path.isdir(folder_path_project) is False:
                 input("\nThe folder does not exist.")
                 vidtool.clean_cmd()
                 continue
@@ -392,7 +394,7 @@ def main():
 
             if (
                 zipind.zipind.ensure_folder_sanitize(
-                    folder_path_report, max_path
+                    folder_path_project, max_path
                 )
                 is False
             ):
@@ -400,11 +402,11 @@ def main():
                 continue
 
             folder_path_output = os.path.join(
-                folder_path_project, "output_videos"
+                folder_path_report, "output_videos"
             )
             utils.ensure_folder_existence([folder_path_output])
             zipind.zipind_core.run(
-                path_dir=folder_path_report,
+                path_dir=folder_path_project,
                 mb_per_file=file_size_limit_mb,
                 path_dir_output=folder_path_output,
                 mode=mode,
@@ -421,11 +423,13 @@ def main():
         # create Dataframe of video details
         elif menu_answer == 2:
 
-            folder_path_report = vidtool.get_folder_path(folder_path_report)
-            file_path_report = vidtool.set_path_file_report(folder_path_report)
+            folder_path_project = vidtool.get_folder_path(folder_path_project)
+            file_path_report = vidtool.set_path_file_report(
+                folder_path_project
+            )
 
             vidtool.step_create_report_filled(
-                folder_path_report,
+                folder_path_project,
                 file_path_report,
                 list_video_extensions,
                 reencode_plan,
@@ -448,12 +452,14 @@ def main():
         elif menu_answer == 3:
 
             # define variables
-            folder_path_report = vidtool.get_folder_path(folder_path_report)
+            folder_path_project = vidtool.get_folder_path(folder_path_project)
 
-            file_path_report = vidtool.set_path_file_report(folder_path_report)
+            file_path_report = vidtool.set_path_file_report(
+                folder_path_project
+            )
 
             folder_path_videos_encoded = (
-                vidtool.set_path_folder_videos_encoded(folder_path_report)
+                vidtool.set_path_folder_videos_encoded(folder_path_project)
             )
             vidtool.ensure_folder_existence([folder_path_videos_encoded])
 
@@ -484,28 +490,30 @@ def main():
 
             # define variables
 
-            folder_path_report = vidtool.get_folder_path(folder_path_report)
+            folder_path_project = vidtool.get_folder_path(folder_path_project)
 
-            file_path_report = vidtool.set_path_file_report(folder_path_report)
+            file_path_report = vidtool.set_path_file_report(
+                folder_path_project
+            )
 
             folder_path_videos_splitted = (
-                vidtool.set_path_folder_videos_splitted(folder_path_report)
+                vidtool.set_path_folder_videos_splitted(folder_path_project)
             )
 
             vidtool.ensure_folder_existence([folder_path_videos_splitted])
 
             folder_path_videos_joined = vidtool.set_path_folder_videos_joined(
-                folder_path_report
+                folder_path_project
             )
 
             vidtool.ensure_folder_existence([folder_path_videos_joined])
 
             filename_output = vidtool.get_folder_name_normalized(
-                folder_path_report
+                folder_path_project
             )
 
             folder_path_videos_cache = vidtool.set_path_folder_videos_cache(
-                folder_path_report
+                folder_path_project
             )
 
             vidtool.ensure_folder_existence([folder_path_videos_cache])
@@ -563,16 +571,18 @@ def main():
 
             # define variables
 
-            folder_path_report = vidtool.get_folder_path(folder_path_report)
+            folder_path_project = vidtool.get_folder_path(folder_path_project)
 
-            file_path_report = vidtool.set_path_file_report(folder_path_report)
+            file_path_report = vidtool.set_path_file_report(
+                folder_path_project
+            )
 
-            folder_path_project = os.path.dirname(file_path_report)
+            folder_path_report = os.path.dirname(file_path_report)
 
             if reencode_plan == "group":
                 # make descriptions.xlsx and summary.txt
                 timestamp_link_maker(
-                    folder_path_output=folder_path_project,
+                    folder_path_output=folder_path_report,
                     file_path_report_origin=file_path_report,
                     hashtag_index=hashtag_index,
                     start_index_number=start_index,
@@ -582,33 +592,33 @@ def main():
 
                 update_description_summary.main(
                     path_summary_top,
-                    folder_path_project,
+                    folder_path_report,
                     document_hashtag,
                     document_title,
                 )
             else:
                 # create descriptions.xlsx for single reencode
                 single_mode.single_description_summary(
-                    folder_path_output=folder_path_project,
+                    folder_path_output=folder_path_report,
                     file_path_report_origin=file_path_report,
                     dict_summary=dict_summary,
                 )
 
                 update_description_summary.main(
                     path_summary_top,
-                    folder_path_project,
+                    folder_path_report,
                     document_hashtag,
                     document_title,
                 )
 
             # make header project
-            header_maker(folder_path_project)
+            header_maker(folder_path_report)
             print("\nTimeStamp and descriptions files created.")
 
             # Check if has warnings
 
             has_warning = utils_timestamp.check_descriptions_warning(
-                folder_path_project
+                folder_path_report
             )
             if has_warning:
                 input(
@@ -627,28 +637,30 @@ def main():
 
             # define variables
 
-            folder_path_report = vidtool.get_folder_path(folder_path_report)
+            folder_path_project = vidtool.get_folder_path(folder_path_project)
 
-            file_path_report = vidtool.set_path_file_report(folder_path_report)
+            file_path_report = vidtool.set_path_file_report(
+                folder_path_project
+            )
 
-            folder_path_project = os.path.dirname(file_path_report)
+            folder_path_report = os.path.dirname(file_path_report)
 
             # Generate config_data dictionary from config_data
             #  in repo tgsender
             # dict_config = config_data.config_data()
             dict_config = config
-            print(f"\nProject: {folder_path_project}\n")
+            print(f"\nProject: {folder_path_report}\n")
 
             # TODO: Enable sending files in macro keyboard mode
             # Send project
             asyncio.run(
                 tgsender.send_via_telegram_api_async(
-                    Path(folder_path_project), dict_config
+                    Path(folder_path_report), dict_config
                 )
             )
 
             # Post and Pin summary
-            autopost_summary.run(folder_path_project)
+            autopost_summary.run(folder_path_report)
 
             # break_point
             input("All files were sent to the telegram")
