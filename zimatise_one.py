@@ -43,6 +43,7 @@ import zipind
 from tgsender import tgsender
 
 import autopost_summary
+import project_metadata
 import update_description_summary
 import utils
 from description import single_mode
@@ -138,6 +139,7 @@ def run_silent_mode(
     path_summary_top,
     document_hashtag,
     document_title,
+    register_invite_link,
     reencode_plan,
     mode,
 ):
@@ -294,6 +296,10 @@ def run_silent_mode(
     # Post and Pin summary
     autopost_summary.run(folder_path_report)
 
+    # Register invite_link
+    if register_invite_link == "1":
+        project_metadata.include(folder_path_project, folder_path_report)
+
 
 def main():
     """
@@ -336,11 +342,11 @@ def main():
     path_summary_bot = Path("user") / config["path_summary_bot"]
     document_hashtag = config["document_hashtag"]
     document_title = config["document_title"]
+    register_invite_link = config["register_invite_link"]
 
     dict_summary = {}
     dict_summary["path_summary_top"] = path_summary_top
     dict_summary["path_summary_bot"] = path_summary_bot
-
     file_path_report = None
     folder_path_project = None
     utils.ensure_folder_existence(["projects"])
@@ -364,6 +370,7 @@ def main():
                 path_summary_top,
                 document_hashtag,
                 document_title,
+                register_invite_link,
                 reencode_plan,
                 mode,
             )
@@ -662,7 +669,12 @@ def main():
             # Post and Pin summary
             autopost_summary.run(folder_path_report)
 
-            # break_point
+            # Register invite_link
+            if register_invite_link == "1":
+                project_metadata.include(
+                    folder_path_project, folder_path_report
+                )
+
             input("All files were sent to the telegram")
             vidtool.clean_cmd()
             return
