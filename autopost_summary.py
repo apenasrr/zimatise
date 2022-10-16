@@ -90,7 +90,7 @@ def run(folder_path_summary):
     summary_content = get_summary_content(folder_path_summary)
     chat_id = get_chat_id(folder_path_summary)
     summary_post_id = send_summary(chat_id, summary_content)
-    time.sleep(3)
+    time.sleep(5)
     pin_summary_post(chat_id, summary_post_id)
 
 
