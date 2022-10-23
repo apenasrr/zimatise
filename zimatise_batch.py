@@ -17,11 +17,10 @@
     -https://github.com/apenasrr/tgsender
 
     ## How to use
-    -Place the folder of the 4 required repositories and this repository in the
-    same location. Then there must be 5 folders in the same location
-    -Enter the 'zimatise' folder and run the zimatise.py file
-    -Follow the on-screen instructions
-    -For more details, check the documentation for the required repositories
+    - Update the libs through the 'update_libs.bat' file
+    - Run the zimatise_one.py file
+    - Follow the on-screen instructions
+    - For more details, check the repository
 
     Do you wish to buy a coffee to say thanks?
     LBC (from LBRY) digital Wallet
@@ -32,8 +31,8 @@
     lbry.tv - Store files and videos on blockchain ensuring free speech
     https://www.activism.net/cypherpunk/manifesto.html -  How encryption is essential to Free Speech and Privacy
 """
+from __future__ import annotations
 
-import asyncio
 import logging
 import os
 import shutil
@@ -311,11 +310,7 @@ def run(
     config = utils.get_config_data(path_file_config)
     dict_config = config
 
-    asyncio.run(
-        tgsender.send_via_telegram_api_async(
-            Path(folder_path_report), dict_config
-        )
-    )
+    tgsender.send_via_telegram_api(Path(folder_path_report), dict_config)
 
     # Post and Pin summary
     autopost_summary.run(folder_path_report)
@@ -345,19 +340,6 @@ def get_list_project_path(root_folder_path):
     return list_project_path
 
 
-def move_project(project_path, folder_path_uploaded):
-
-    project_path_uploaded = (
-        Path(folder_path_uploaded) / Path(project_path).name
-    )
-    Path(project_path).rename(project_path_uploaded)
-
-    folder_path_auth = Path(project_path_uploaded).parent / (
-        "_" + Path(project_path_uploaded).name
-    )
-    Path(project_path_uploaded).rename(folder_path_auth)
-
-
 def get_folder_path_uploaded(folder_path):
 
     if Path(folder_path).exists():
@@ -384,12 +366,8 @@ def main():
     path_file_config = os.path.join(folder_script_path, "config.ini")
     config = utils.get_config_data(path_file_config)
     folder_path_start = config["folder_path_start"]
-    folder_path_uploaded = get_folder_path_uploaded(
-        config["folder_path_uploaded"]
-    )
     file_size_limit_mb = int(config["file_size_limit_mb"])
     mode = config["mode"]
-    max_path = int(config["max_path"])
     list_video_extensions = config["video_extensions"].split(",")
     duration_limit = config["duration_limit"]
     activate_transition = config["activate_transition"]
@@ -417,7 +395,7 @@ def main():
     register_invite_link = config["register_invite_link"]
 
     file_path_report = None
-    folder_path_report = None
+    folder_path_project = None
     utils.ensure_folder_existence(["projects"])
 
     while True:
@@ -428,12 +406,12 @@ def main():
             vidtool.clean_cmd()
             continue
 
-        folder_path_report = list_project_path[0]
+        folder_path_project = list_project_path[0]
         file_path_report = vidtool.set_path_file_report(
-            Path(folder_path_report)
+            Path(folder_path_project)
         )
         run(
-            folder_path_report,
+            folder_path_project,
             file_path_report,
             list_video_extensions,
             file_size_limit_mb,
@@ -456,7 +434,7 @@ def main():
 
         vidtool.clean_cmd()
 
-        move_project(folder_path_report, folder_path_uploaded)
+        utils.move_project(folder_path_project, config)
 
 
 if __name__ == "__main__":

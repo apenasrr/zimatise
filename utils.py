@@ -2,9 +2,33 @@ import logging
 import os
 import sys
 from configparser import ConfigParser
+from pathlib import Path
 
 import pandas as pd
 import vidtool
+
+
+def move_project(folder_path_project, config_data):
+
+    move_to_uploaded = config_data.get("move_to_uploaded", "0")
+    folder_path_uploaded = config_data.get("folder_path_uploaded")
+
+    if (
+        not folder_path_uploaded
+        or not Path(folder_path_project).exists()
+        or move_to_uploaded == "0"
+    ):
+        return
+
+    project_path_uploaded = (
+        Path(folder_path_uploaded) / Path(folder_path_project).name
+    )
+    Path(folder_path_project).rename(project_path_uploaded)
+
+    folder_path_auth = Path(project_path_uploaded).parent / (
+        "_" + Path(project_path_uploaded).name
+    )
+    Path(project_path_uploaded).rename(folder_path_auth)
 
 
 def add_path_script_folders(list_folders_name):

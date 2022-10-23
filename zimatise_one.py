@@ -17,11 +17,10 @@
     -https://github.com/apenasrr/tgsender
 
     ## How to use
-    -Place the folder of the 4 required repositories and this repository in the
-    same location. Then there must be 5 folders in the same location
-    -Enter the 'zimatise' folder and run the zimatise.py file
-    -Follow the on-screen instructions
-    -For more details, check the documentation for the required repositories
+    - Update the libs through the 'update_libs.bat' file
+    - Run the zimatise_one.py file
+    - Follow the on-screen instructions
+    - For more details, check the repository
 
     Do you wish to buy a coffee to say thanks?
     LBC (from LBRY) digital Wallet
@@ -33,7 +32,8 @@
     https://www.activism.net/cypherpunk/manifesto.html -  How encryption is essential to Free Speech and Privacy
 """
 
-import asyncio
+from __future__ import annotations
+
 import logging
 import os
 from pathlib import Path
@@ -142,12 +142,12 @@ def run_silent_mode(
     register_invite_link,
     reencode_plan,
     mode,
+    config_data,
 ):
 
     folder_path_project = vidtool.get_folder_path(folder_path_project)
     file_path_report = vidtool.set_path_file_report(folder_path_project)
     folder_path_report = os.path.dirname(file_path_report)
-
     folder_path_output = os.path.join(folder_path_report, "output_videos")
 
     ################################### p1
@@ -278,20 +278,11 @@ def run_silent_mode(
     ################################### p6
 
     # TODO: tgsender config
-    # dict_config = config_data.config_data()
-    folder_script_path = utils.get_folder_script_path()
-    path_file_config = os.path.join(folder_script_path, "config.ini")
-    config = utils.get_config_data(path_file_config)
-    dict_config = config
-
     print(f"\nProject: {folder_path_report}\n")
 
     # TODO: call tgsender.main
-    asyncio.run(
-        tgsender.send_via_telegram_api_async(
-            Path(folder_path_report), dict_config
-        )
-    )
+
+    tgsender.send_via_telegram_api(Path(folder_path_report), config_data)
 
     # Post and Pin summary
     autopost_summary.run(folder_path_report)
@@ -300,49 +291,46 @@ def run_silent_mode(
     if register_invite_link == "1":
         project_metadata.include(folder_path_project, folder_path_report)
 
+    utils.move_project(folder_path_project, config_data)
+
 
 def main():
     """
-    How to use
-    -Place the folder of the 4 required repositories and this repository in
-    the same location. Then there must be 5 folders in the same location
-    -Enter the 'zimatise' folder and run the zimatise.py file
-    -Follow the on-screen instructions
-    -For more details, check the documentation for the required repositories
-    Source: https://github.com/apenasrr/zimatise
+    -For instructions, check the documentation in
+    https://github.com/apenasrr/zimatise
     """
 
     # get config data
     folder_script_path = utils.get_folder_script_path()
     path_file_config = os.path.join(folder_script_path, "config.ini")
-    config = utils.get_config_data(path_file_config)
-    file_size_limit_mb = int(config["file_size_limit_mb"])
-    mode = config["mode"]
-    max_path = int(config["max_path"])
-    list_video_extensions = config["video_extensions"].split(",")
-    duration_limit = config["duration_limit"]
-    activate_transition = config["activate_transition"]
-    start_index = int(config["start_index"])
-    hashtag_index = config["hashtag_index"]
-    reencode_plan = config["reencode_plan"]
+    config_data = utils.get_config_data(path_file_config)
+    file_size_limit_mb = int(config_data["file_size_limit_mb"])
+    mode = config_data["mode"]
+    max_path = int(config_data["max_path"])
+    list_video_extensions = config_data["video_extensions"].split(",")
+    duration_limit = config_data["duration_limit"]
+    activate_transition = config_data["activate_transition"]
+    start_index = int(config_data["start_index"])
+    hashtag_index = config_data["hashtag_index"]
+    reencode_plan = config_data["reencode_plan"]
 
-    descriptions_auto_adapt_str = config["descriptions_auto_adapt"]
+    descriptions_auto_adapt_str = config_data["descriptions_auto_adapt"]
     if descriptions_auto_adapt_str == "true":
         descriptions_auto_adapt = True
     else:
         descriptions_auto_adapt = False
 
-    silent_mode_str = config["silent_mode"]
+    silent_mode_str = config_data["silent_mode"]
     if silent_mode_str == "true":
         silent_mode = True
     else:
         silent_mode = False
 
-    path_summary_top = Path("user") / config["path_summary_top"]
-    path_summary_bot = Path("user") / config["path_summary_bot"]
-    document_hashtag = config["document_hashtag"]
-    document_title = config["document_title"]
-    register_invite_link = config["register_invite_link"]
+    path_summary_top = Path("user") / config_data["path_summary_top"]
+    path_summary_bot = Path("user") / config_data["path_summary_bot"]
+    document_hashtag = config_data["document_hashtag"]
+    document_title = config_data["document_title"]
+    register_invite_link = config_data["register_invite_link"]
 
     dict_summary = {}
     dict_summary["path_summary_top"] = path_summary_top
@@ -373,6 +361,7 @@ def main():
                 register_invite_link,
                 reencode_plan,
                 mode,
+                config_data,
             )
             input("\nProject processed and sent to Telegram")
             vidtool.clean_cmd()
@@ -654,16 +643,13 @@ def main():
 
             # Generate config_data dictionary from config_data
             #  in repo tgsender
-            # dict_config = config_data.config_data()
-            dict_config = config
             print(f"\nProject: {folder_path_report}\n")
 
             # TODO: Enable sending files in macro keyboard mode
             # Send project
-            asyncio.run(
-                tgsender.send_via_telegram_api_async(
-                    Path(folder_path_report), dict_config
-                )
+
+            tgsender.send_via_telegram_api(
+                Path(folder_path_report), config_data
             )
 
             # Post and Pin summary
@@ -677,6 +663,8 @@ def main():
 
             input("All files were sent to the telegram")
             vidtool.clean_cmd()
+
+            utils.move_project(folder_path_project, config_data)
             return
 
 
