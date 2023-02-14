@@ -183,9 +183,9 @@ def run(
     ################################### p1
     utils.ensure_folder_existence([folder_path_output])
     zipind.zipind_core.run(
-        path_dir=folder_path_project,
+        path_folder=folder_path_project,
         mb_per_file=file_size_limit_mb,
-        path_dir_output=folder_path_output,
+        path_folder_output=folder_path_output,
         mode=mode,
         ignore_extensions=list_video_extensions,
     )
