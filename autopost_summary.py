@@ -9,12 +9,10 @@ import utils
 
 
 def get_chat_id(folder_path_summary):
-
     file_path_metadata = os.path.realpath(
         os.path.join(folder_path_summary, "channel_metadata")
     )
     if os.path.exists(file_path_metadata):
-
         dict_metadata = eval(utils.get_txt_content(file_path_metadata))
         chat_id = dict_metadata["chat_id"]
     else:
@@ -24,8 +22,38 @@ def get_chat_id(folder_path_summary):
     return chat_id
 
 
+def break_line_max_carac(stringa: str, max_lenght: int) -> list:
+    """Breaks a long sentence into chunks of sentences with a maximum length.
+
+    Args:
+        stringa (str): The input sentence.
+        max_carac (int): The maximum length of each chunk.
+
+    Returns:
+        list: A list of sentence chunks.
+
+    """
+
+    list_word = stringa.split(" ")
+    list_chunk = []
+    chunk = []
+    for word in list_word:
+        future_state = " ".join(chunk + [word])
+        if len(future_state) > max_lenght:
+            list_chunk.append(" ".join(chunk))
+            chunk = []
+        chunk.append(word)
+
+    if chunk:
+        list_chunk.append(" ".join(chunk))
+
+    return list_chunk
+
+
 def get_list_content(content: str) -> list:
-    """Split content by breakline into blocks of up to 4000 characters
+    """Split content into blocks of up to 4000 characters.
+    Use line breaks as separators. If a line surpasses the limit, it is divided
+    into smaller pieces using space as separators.
 
     Args:
         content (str): content
@@ -34,22 +62,33 @@ def get_list_content(content: str) -> list:
         list: list of content limited to 4000 characters
     """
 
-    if len(content) > 4000:
-        list_general_line = content.split("\n")
-
+    max_lenght = 4000
+    if len(content) > max_lenght:
+        list_line = content.split("\n")
+        bucket = []
         list_content = []
-        list_block_line = []
-        for line in list_general_line:
-            new_state = "\n".join(list_block_line) + "\n" + line
-            if len(new_state) < 4000:
-                list_block_line.append(line)
+        for line in list_line:
+            # Test if with the inclusion of the new line,
+            # extrapolates the limit character
+            future_bucket_state = "\n".join(bucket + [line])
+            if len(future_bucket_state) < max_lenght:
+                # If it does not exceed, throw line in the bucket
+                bucket.append(line)
             else:
-                list_content.append("\n".join(list_block_line))
-                list_block_line = []
-                list_block_line.append(line)
-
-        if len(list_block_line) > 0:
-            list_content.append("\n".join(list_block_line))
+                # If it exceed, save the current state of the bucket
+                list_content.append("\n".join(bucket))
+                bucket = []
+                # and check if line exceeds the limit
+                if len(line) < max_lenght:
+                    # If it does not exceed, throw line in the bucket
+                    bucket.append(line)
+                else:
+                    # If it exceed, break the line in small sentenses and save
+                    # each piece as independent content
+                    list_sentense = break_line_max_carac(line, max_lenght)
+                    list_content += list_sentense
+        if len(bucket) > 0:
+            list_content.append("\n".join(bucket))
     else:
         list_content = [content]
 
@@ -57,7 +96,6 @@ def get_list_content(content: str) -> list:
 
 
 def send_summary(chat_id, summary_content):
-
     list_content = get_list_content(summary_content)
     for index, content in enumerate(list_content):
         message_obj = asyncio.run(
@@ -69,14 +107,12 @@ def send_summary(chat_id, summary_content):
 
 
 def get_summary_content(folder_path_summary):
-
     file_path_summary = os.path.join(folder_path_summary, "summary.txt")
     summary_content = utils.get_txt_content(file_path_summary)
     return summary_content
 
 
 def pin_summary_post(chat_id, summary_post_id):
-
     asyncio.run(tgsender.api_async.pin_chat_message(chat_id, summary_post_id))
 
 
@@ -95,7 +131,6 @@ def run(folder_path_summary):
 
 
 def main(folder_path_project):
-
     file_path_report = vidtool.set_path_file_report(folder_path_project)
     folder_path_report = os.path.dirname(file_path_report)
 

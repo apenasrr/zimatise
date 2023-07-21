@@ -10,8 +10,7 @@ import utils
 
 
 def logging_config():
-
-    logfilename = "log-" + "test_haader" + ".txt"
+    logfilename = "log-" + "header_maker" + ".txt"
     logging.basicConfig(
         filename=logfilename,
         level=logging.DEBUG,
@@ -28,7 +27,6 @@ def logging_config():
 
 
 def check_col_unique_values(serie):
-
     serie_unique = serie.drop_duplicates(keep="first")
     list_unique_values = serie_unique.unique().tolist()
     qt_unique_values = len(list_unique_values)
@@ -39,7 +37,6 @@ def check_col_unique_values(serie):
 
 
 def get_serie_name_project(df_folder):
-
     len_cols = len(df_folder.columns)
     for n_col in range(len_cols):
         serie = df_folder.iloc[:, n_col]
@@ -71,25 +68,14 @@ def explode_parts_serie_path(path_serie: pd.Series) -> pd.DataFrame:
     return pd.DataFrame(list_dict)
 
 
-def get_project_name(df):
-    """
-    Includes to the right of the DataFrame, columns corresponding to each
-     depth level of the folder structure of the origin files
-    :df: DataFrame. Requires column 'file_path_folder_origin'
-    """
-
-    path_serie = df["file_path_folder_origin"]
-    df_folder = explode_parts_serie_path(path_serie)
-    serie_name_project = get_serie_name_project(df_folder)
-    project_name = serie_name_project.tolist()[0]
-    return project_name
+def get_project_name(folder_path_project: Path) -> str:
+    return folder_path_project.stem.replace("_", " ")
 
 
 def get_list_video_details_path_file(path_dir, file_name):
-
     list_path_file = []
 
-    for root, dirs, files in os.walk(path_dir):
+    for root, _, files in os.walk(path_dir):
         for file in files:
             if file == file_name:
                 list_path_file.append(os.path.join(root, file))
@@ -98,7 +84,6 @@ def get_list_video_details_path_file(path_dir, file_name):
 
 
 def get_dataframe_concat(list_video_details_path_file):
-
     df = pd.DataFrame()
     for video_details_path_file in list_video_details_path_file:
         df_unique = pd.read_csv(video_details_path_file)
@@ -107,7 +92,6 @@ def get_dataframe_concat(list_video_details_path_file):
 
 
 def get_duration_filesize_gross(df):
-
     df_filter = df.loc[:, ["file_size", "duration"]]
     df_filter["duration"] = pd.to_timedelta(df_filter["duration"])
     duration_sum = df_filter["duration"].sum()
@@ -122,15 +106,13 @@ def get_duration_filesize_gross(df):
 
 
 def get_duration_filesize(df):
-
     duration, file_size = get_duration_filesize_gross(df)
     duration = utils.format_time_delta(duration)
     file_size = str(file_size) + " gb"
     return duration, file_size
 
 
-def header_maker(path_folder_output):
-
+def header_maker(path_folder_output, folder_path_project):
     # main variables declaration
     file_name_video_details = "video_details.csv"
     path_file_template_header = Path("user") / "header_template.txt"
@@ -145,7 +127,7 @@ def header_maker(path_folder_output):
 
     # create variables
     duration, file_size = get_duration_filesize(df)
-    project_name = get_project_name(df)
+    project_name = get_project_name(folder_path_project)
     d_keys = {
         "project_name": project_name,
         "file_size": file_size,

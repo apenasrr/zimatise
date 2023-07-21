@@ -54,7 +54,6 @@ from timestamp_link_maker import timestamp_link_maker, utils_timestamp
 
 
 def logging_config():
-
     logfilename = "log-" + "zimatise" + ".txt"
     logging.basicConfig(
         level=logging.INFO,
@@ -72,7 +71,6 @@ def logging_config():
 
 
 def menu_ask():
-
     print("1-Create independent Zip parts for not_video_files")
     print("2-Generate worksheet listing the files")
     print(
@@ -103,13 +101,11 @@ def menu_ask():
 
 
 def play_sound():
-
     path_file_sound = ""
     os.system(f'start wmplayer "{path_file_sound}"')
 
 
 def define_mb_per_file(path_file_config, file_size_limit_mb):
-
     if file_size_limit_mb is not None:
         repeat_size = input(
             f"Define limit of {file_size_limit_mb} " + "MB per file? y/n\n"
@@ -127,14 +123,23 @@ def define_mb_per_file(path_file_config, file_size_limit_mb):
     return file_size_limit_mb
 
 
-def send_to_moc(send_moc, moc_chat_id, template_moc, folder_path_project):
-
+def send_to_moc(
+    send_moc,
+    list_moc_chat_id,
+    template_moc,
+    folder_path_report,
+    folder_path_project,
+):
     if send_moc == 1:
-        moc.pipe_publish(moc_chat_id, template_moc, folder_path_project)
+        moc.pipe_publish(
+            list_moc_chat_id,
+            template_moc,
+            folder_path_report,
+            folder_path_project,
+        )
 
 
 def clean_temp_files(autodel_video_temp, folder_path_project):
-
     list_folder_name_to_delete = [
         "output_videos",
         "videos_encoded",
@@ -171,10 +176,9 @@ def run(
     reencode_plan,
     mode,
     send_moc,
-    moc_chat_id,
+    list_moc_chat_id,
     autodel_video_temp,
 ):
-
     folder_path_project = vidtool.get_folder_path(folder_path_project)
     folder_path_report = os.path.dirname(file_path_report)
     print(f"Project: {Path(folder_path_project).name}\n\n")
@@ -256,7 +260,6 @@ def run(
     ################################### p5
 
     if reencode_plan == "group":
-
         # make descriptions.xlsx and summary.txt
         timestamp_link_maker(
             folder_path_output=folder_path_report,
@@ -289,7 +292,7 @@ def run(
         )
 
     # make header project
-    header_maker(folder_path_report)
+    header_maker(folder_path_report, folder_path_project)
 
     # Check if has warnings
     has_warning = utils_timestamp.check_descriptions_warning(
@@ -322,14 +325,17 @@ def run(
     # Publish on moc
     path_file_moc_template = Path("user") / "moc_template.txt"
     send_to_moc(
-        send_moc, moc_chat_id, path_file_moc_template, folder_path_report
+        send_moc,
+        list_moc_chat_id,
+        path_file_moc_template,
+        folder_path_report,
+        folder_path_project,
     )
 
     clean_temp_files(autodel_video_temp, folder_path_report)
 
 
 def get_list_project_path(root_folder_path):
-
     list_dir_name = os.listdir(root_folder_path)
     list_project_path = []
     for dir_name in list_dir_name:
@@ -341,13 +347,35 @@ def get_list_project_path(root_folder_path):
 
 
 def get_folder_path_uploaded(folder_path):
-
     if Path(folder_path).exists():
         return folder_path
     else:
         path_folder_uploaded = Path(".").absolute() / "uploaded"
         path_folder_uploaded.mkdir()
         return path_folder_uploaded
+
+
+def get_list_chat_id(param_chat_id: str) -> list:
+    """Converts string parameter with 1 or more chat_id to chat_id list
+
+    Args:
+        param_chat_id (str): parameter with 1 or more chat_id separated by comma
+
+    Raises:
+        Exception: If the chat_id is invalid because it is not numerical
+
+    Returns:
+        list: chat_id list
+    """
+
+    list_param_moc_chat_id = [x.strip() for x in param_chat_id.split(",")]
+    list_chat_id = []
+    for moc_chat_id in list_param_moc_chat_id:
+        try:
+            list_chat_id.append(int(moc_chat_id))
+        except Exception:
+            raise Exception(f"moc_chat_id invalid. - {moc_chat_id}")
+    return list_chat_id
 
 
 def main():
@@ -375,7 +403,7 @@ def main():
     hashtag_index = config["hashtag_index"]
     reencode_plan = config["reencode_plan"]
     send_moc = int(config["send_moc"])
-    moc_chat_id = int(config["moc_chat_id"])
+    list_moc_chat_id = get_list_chat_id(config["moc_chat_id"])
     autodel_video_temp = int(config["autodel_video_temp"])
 
     descriptions_auto_adapt_str = config["descriptions_auto_adapt"]
@@ -428,7 +456,7 @@ def main():
             reencode_plan,
             mode,
             send_moc,
-            moc_chat_id,
+            list_moc_chat_id,
             autodel_video_temp,
         )
 

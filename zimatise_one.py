@@ -52,7 +52,6 @@ from timestamp_link_maker import timestamp_link_maker, utils_timestamp
 
 
 def logging_config():
-
     logfilename = "log-" + "zimatise" + ".txt"
     logging.basicConfig(
         level=logging.INFO,
@@ -70,7 +69,6 @@ def logging_config():
 
 
 def menu_ask():
-
     print("1-Create independent Zip parts for not_video_files")
     print("2-Generate worksheet listing the files")
     print(
@@ -101,13 +99,11 @@ def menu_ask():
 
 
 def play_sound():
-
     path_file_sound = ""
     os.system(f'start wmplayer "{path_file_sound}"')
 
 
 def define_mb_per_file(path_file_config, file_size_limit_mb):
-
     if file_size_limit_mb is not None:
         repeat_size = input(
             f"Define limit of {file_size_limit_mb} " + "MB per file? y/n\n"
@@ -144,7 +140,6 @@ def run_silent_mode(
     mode,
     config_data,
 ):
-
     folder_path_project = vidtool.get_folder_path(folder_path_project)
     file_path_report = vidtool.set_path_file_report(folder_path_project)
     folder_path_report = os.path.dirname(file_path_report)
@@ -227,7 +222,6 @@ def run_silent_mode(
     ################################### p5
 
     if reencode_plan == "group":
-
         # make descriptions.xlsx and summary.txt
         timestamp_link_maker(
             folder_path_output=folder_path_report,
@@ -260,7 +254,7 @@ def run_silent_mode(
         )
 
     # make header project
-    header_maker(folder_path_report)
+    header_maker(folder_path_report, folder_path_project)
 
     # Check if has warnings
 
@@ -418,7 +412,6 @@ def main():
         # 2-Generate worksheet listing the files
         # create Dataframe of video details
         elif menu_answer == 2:
-
             folder_path_project = vidtool.get_folder_path(folder_path_project)
             file_path_report = vidtool.set_path_file_report(
                 folder_path_project
@@ -446,7 +439,6 @@ def main():
         #       -reencode videos mark in column video_resolution_to_change
         #       -recheck to correct duration metadata
         elif menu_answer == 3:
-
             # define variables
             folder_path_project = vidtool.get_folder_path(folder_path_project)
 
@@ -483,7 +475,6 @@ def main():
         # 4-join videos
         #       -Group videos with the same codec and resolution')
         elif menu_answer == 4:
-
             # define variables
 
             folder_path_project = vidtool.get_folder_path(folder_path_project)
@@ -608,7 +599,7 @@ def main():
                 )
 
             # make header project
-            header_maker(folder_path_report)
+            header_maker(folder_path_report, folder_path_project)
             print("\nTimeStamp and descriptions files created.")
 
             # Check if has warnings
