@@ -63,7 +63,6 @@ def create_text_desc(row):
 
 
 def get_serie_description(df):
-
     serie_description_draft = df.apply(create_text_desc, axis=1)
     serie_description = include_hashtag(serie_description_draft)
     return serie_description
@@ -94,7 +93,7 @@ def include_hashtag(serie_input):
     return serie_output
 
 
-def get_path_folder_root(serie_folder_path):
+def get_folder_path_root(serie_folder_path):
     """Returns the path of the root folder in common to all the file paths in
     the series
 
@@ -121,22 +120,22 @@ def get_path_folder_root(serie_folder_path):
         raise ValueError("No root folder found")
 
     list_parts = df.iloc[0, list_index_col_root].to_list()
-    path_folder_root = Path(*list_parts)
-    return path_folder_root
+    folder_path_root = Path(*list_parts)
+    return folder_path_root
 
 
 def get_serie_subfolders(
-    serie_folder_path: pd.Series, path_folder_root: str
+    serie_folder_path: pd.Series, folder_path_root: str
 ) -> pd.Series(Path):
     """Excludes the path of the root folder, from a path of absolute paste"""
 
-    def exclude_root_folder_parts(path_folder, path_folder_root):
-        tuple_parts = Path(path_folder).parts[len(path_folder_root.parts) :]
+    def exclude_root_folder_parts(folder_path, folder_path_root):
+        tuple_parts = Path(folder_path).parts[len(folder_path_root.parts) :]
         return Path(*tuple_parts)
 
     serie_subfolders = serie_folder_path.apply(
-        lambda path_folder: exclude_root_folder_parts(
-            path_folder, path_folder_root
+        lambda folder_path: exclude_root_folder_parts(
+            folder_path, folder_path_root
         )
     )
     return serie_subfolders
@@ -172,12 +171,12 @@ def create_df_descriptions(file_path_report_origin):
     )
 
     serie_folder_path = df_video_details["file_path_folder_origin"]
-    path_folder_root = get_path_folder_root(
+    folder_path_root = get_folder_path_root(
         serie_folder_path=serie_folder_path
     )
 
     serie_folder_relative = get_serie_subfolders(
-        serie_folder_path, path_folder_root
+        serie_folder_path, folder_path_root
     )
 
     df_desc_draft = get_df_desc_draft(serie_folder_relative, serie_file_name)

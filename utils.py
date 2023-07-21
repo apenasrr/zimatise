@@ -9,7 +9,6 @@ import vidtool
 
 
 def move_project(folder_path_project, config_data):
-
     move_to_uploaded = config_data.get("move_to_uploaded", "0")
     folder_path_uploaded = config_data.get("folder_path_uploaded")
 
@@ -32,7 +31,6 @@ def move_project(folder_path_project, config_data):
 
 
 def add_path_script_folders(list_folders_name):
-
     list_repo_dont_found = []
     for folder_name in list_folders_name:
         path_active_folder = os.path.dirname(os.path.realpath(__file__))
@@ -62,7 +60,6 @@ def add_path_script_folders(list_folders_name):
 
 
 def show_projects_queue(header, list_project_path):
-
     print(header)
     if list_project_path[0] == "":
         print("Awaiting a new task...")
@@ -74,7 +71,6 @@ def show_projects_queue(header, list_project_path):
 
 
 def get_list_project_to_process(file_path_monitor, flag_rule):
-
     df = pd.read_csv(file_path_monitor)
 
     list_serie_boolean = get_series_boolean_by_df_filter(df, dict_=flag_rule)
@@ -89,7 +85,6 @@ def get_list_project_to_process(file_path_monitor, flag_rule):
 
 
 def select_a_project_to_process(list_project_path):
-
     project_to_process = list_project_path[0]
     return project_to_process
 
@@ -133,12 +128,10 @@ def get_series_boolean_by_df_filter(df, dict_):
 
 
 def clean_cmd():
-
     os.system("cls")
 
 
 def get_folder_path_project_process(project_path):
-
     folder_name_normalized = vidtool.get_folder_name_normalized(project_path)
 
     folder_path_output_relative = "output_" + folder_name_normalized.strip("_")
@@ -152,7 +145,6 @@ def get_folder_path_project_process(project_path):
 
 
 def get_folder_path_project_output(folder_path_project_process):
-
     folder_path_project_output = os.path.join(
         folder_path_project_process, "output_videos"
     )
@@ -226,14 +218,13 @@ def test_folders_has_path_long(list_folder_path, max_path=260):
 
 
 def get_folder_script_path():
-
     folder_script_path_relative = os.path.dirname(__file__)
     folder_script_path = os.path.realpath(folder_script_path_relative)
 
     return folder_script_path
 
 
-def get_config_data(path_file_config):
+def get_config_data(file_path_config):
     """get default configuration data from file config.ini
 
     Returns:
@@ -241,7 +232,7 @@ def get_config_data(path_file_config):
     """
 
     config_file = ConfigParser()
-    config_file.read(path_file_config)
+    config_file.read(file_path_config)
     default_config = dict(config_file["default"])
     return default_config
 
@@ -258,7 +249,6 @@ def ensure_folder_existence(folders_path):
 
 
 def get_txt_content(file_path):
-
     list_encode = ["utf-8-sig", "ISO-8859-1"]  # utf8, ansi
     for encode in list_encode:
         try:
@@ -276,14 +266,12 @@ def get_txt_content(file_path):
 
 
 def create_txt(file_path, stringa):
-
     f = open(file_path, "w", encoding="utf8")
     f.write(stringa)
     f.close()
 
 
 def format_time_delta(time_delta):
-
     days = time_delta.days
     totalSeconds = time_delta.seconds
     hours, remainder = divmod(totalSeconds, 3600)
@@ -294,9 +282,7 @@ def format_time_delta(time_delta):
 
 
 def compile_template(d_keys, template_content):
-
     for key in d_keys.keys():
-
         template_content = template_content.replace(
             "{" + key + "}", d_keys[key]
         )

@@ -99,11 +99,11 @@ def menu_ask():
 
 
 def play_sound():
-    path_file_sound = ""
-    os.system(f'start wmplayer "{path_file_sound}"')
+    file_path_sound = ""
+    os.system(f'start wmplayer "{file_path_sound}"')
 
 
-def define_mb_per_file(path_file_config, file_size_limit_mb):
+def define_mb_per_file(file_path_config, file_size_limit_mb):
     if file_size_limit_mb is not None:
         repeat_size = input(
             f"Define limit of {file_size_limit_mb} " + "MB per file? y/n\n"
@@ -111,12 +111,12 @@ def define_mb_per_file(path_file_config, file_size_limit_mb):
         if repeat_size == "n":
             file_size_limit_mb = zipind.zipind.ask_mb_file()
             zipind.zipind.config_update_data(
-                path_file_config, "file_size_limit_mb", str(file_size_limit_mb)
+                file_path_config, "file_size_limit_mb", str(file_size_limit_mb)
             )
     else:
         file_size_limit_mb = zipind.zipind.ask_mb_file()
         zipind.zipind.config_update_data(
-            path_file_config, "file_size_limit_mb", str(file_size_limit_mb)
+            file_path_config, "file_size_limit_mb", str(file_size_limit_mb)
         )
     return file_size_limit_mb
 
@@ -296,8 +296,8 @@ def main():
 
     # get config data
     folder_script_path = utils.get_folder_script_path()
-    path_file_config = os.path.join(folder_script_path, "config.ini")
-    config_data = utils.get_config_data(path_file_config)
+    file_path_config = os.path.join(folder_script_path, "config.ini")
+    config_data = utils.get_config_data(file_path_config)
     file_size_limit_mb = int(config_data["file_size_limit_mb"])
     mode = config_data["mode"]
     max_path = int(config_data["max_path"])
@@ -379,7 +379,7 @@ def main():
                 continue
 
             file_size_limit_mb = define_mb_per_file(
-                path_file_config, file_size_limit_mb
+                file_path_config, file_size_limit_mb
             )
 
             if (

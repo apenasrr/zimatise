@@ -5,7 +5,6 @@ import pandas as pd
 
 
 def get_list_zips_file_path(folder_path):
-
     list_file_path_zip = []
     for root, _, files in os.walk(folder_path):
         for file_ in files:
@@ -20,7 +19,6 @@ def get_list_zips_file_path(folder_path):
 
 
 def get_list_dict(list_file_path_zip, document_hashtag):
-
     l = []
     for index, file_path in enumerate(list_file_path_zip):
         d = {}
@@ -34,35 +32,31 @@ def get_list_dict(list_file_path_zip, document_hashtag):
 
 
 def get_df_desc_docs(dict_description_docs):
-
     df = pd.DataFrame(dict_description_docs)
     return df
 
 
 def get_df_description_original(folder_path_output):
-
-    path_file_description = os.path.join(folder_path_output, "upload_plan.csv")
-    df_desc = pd.read_csv(path_file_description)
+    file_path_description = os.path.join(folder_path_output, "upload_plan.csv")
+    df_desc = pd.read_csv(file_path_description)
     return df_desc
 
 
 def save_desc_updated(folder_path_output, df_desc_update):
-
-    path_file_description = os.path.join(folder_path_output, "upload_plan.csv")
+    file_path_description = os.path.join(folder_path_output, "upload_plan.csv")
     # backup
-    path_file_description_to = os.path.join(
+    file_path_description_to = os.path.join(
         folder_path_output, "upload_plan-only_videos.csv"
     )
-    shutil.copy(path_file_description, path_file_description_to)
+    shutil.copy(file_path_description, file_path_description_to)
 
     # save
-    df_desc_update.to_csv(path_file_description, index=False)
+    df_desc_update.to_csv(file_path_description, index=False)
 
 
 def descriptions_report_update_with_docs(
     folder_path_output, list_file_path_zip, document_hashtag
 ):
-
     dict_description_docs = get_list_dict(list_file_path_zip, document_hashtag)
     df_desc_docs = get_df_desc_docs(dict_description_docs)
     df_desc = get_df_description_original(folder_path_output)
@@ -73,7 +67,6 @@ def descriptions_report_update_with_docs(
 
 
 def get_list_file_path_zip(folder_path_output):
-
     folder_path_output_files = os.path.join(
         folder_path_output, "output_videos"
     )

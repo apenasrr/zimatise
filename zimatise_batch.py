@@ -101,11 +101,11 @@ def menu_ask():
 
 
 def play_sound():
-    path_file_sound = ""
-    os.system(f'start wmplayer "{path_file_sound}"')
+    file_path_sound = ""
+    os.system(f'start wmplayer "{file_path_sound}"')
 
 
-def define_mb_per_file(path_file_config, file_size_limit_mb):
+def define_mb_per_file(file_path_config, file_size_limit_mb):
     if file_size_limit_mb is not None:
         repeat_size = input(
             f"Define limit of {file_size_limit_mb} " + "MB per file? y/n\n"
@@ -113,12 +113,12 @@ def define_mb_per_file(path_file_config, file_size_limit_mb):
         if repeat_size == "n":
             file_size_limit_mb = zipind.zipind.ask_mb_file()
             zipind.zipind.config_update_data(
-                path_file_config, "file_size_limit_mb", str(file_size_limit_mb)
+                file_path_config, "file_size_limit_mb", str(file_size_limit_mb)
             )
     else:
         file_size_limit_mb = zipind.zipind.ask_mb_file()
         zipind.zipind.config_update_data(
-            path_file_config, "file_size_limit_mb", str(file_size_limit_mb)
+            file_path_config, "file_size_limit_mb", str(file_size_limit_mb)
         )
     return file_size_limit_mb
 
@@ -149,11 +149,11 @@ def clean_temp_files(autodel_video_temp, folder_path_project):
         return
 
     for folder_name_to_delete in list_folder_name_to_delete:
-        path_folder_to_delete = os.path.join(
+        folder_path_to_delete = os.path.join(
             folder_path_project, folder_name_to_delete
         )
-        if os.path.exists(path_folder_to_delete):
-            shutil.rmtree(path_folder_to_delete, ignore_errors=True)
+        if os.path.exists(folder_path_to_delete):
+            shutil.rmtree(folder_path_to_delete, ignore_errors=True)
         else:
             pass
 
@@ -309,8 +309,8 @@ def run(
     ################################### p6
 
     folder_script_path = utils.get_folder_script_path()
-    path_file_config = os.path.join(folder_script_path, "config.ini")
-    config = utils.get_config_data(path_file_config)
+    file_path_config = os.path.join(folder_script_path, "config.ini")
+    config = utils.get_config_data(file_path_config)
     dict_config = config
 
     tgsender.send_via_telegram_api(Path(folder_path_report), dict_config)
@@ -323,11 +323,11 @@ def run(
         project_metadata.include(folder_path_project, folder_path_report)
 
     # Publish on moc
-    path_file_moc_template = Path("user") / "moc_template.txt"
+    file_path_moc_template = Path("user") / "moc_template.txt"
     send_to_moc(
         send_moc,
         list_moc_chat_id,
-        path_file_moc_template,
+        file_path_moc_template,
         folder_path_report,
         folder_path_project,
     )
@@ -336,13 +336,13 @@ def run(
 
 
 def get_list_project_path(root_folder_path):
-    list_dir_name = os.listdir(root_folder_path)
+    list_folder_name = os.listdir(root_folder_path)
     list_project_path = []
-    for dir_name in list_dir_name:
-        path_folder = os.path.join(root_folder_path, dir_name)
-        if not os.path.isdir(path_folder):
+    for folder_name in list_folder_name:
+        folder_path = os.path.join(root_folder_path, folder_name)
+        if not os.path.isdir(folder_path):
             continue
-        list_project_path.append(path_folder)
+        list_project_path.append(folder_path)
     return list_project_path
 
 
@@ -350,9 +350,9 @@ def get_folder_path_uploaded(folder_path):
     if Path(folder_path).exists():
         return folder_path
     else:
-        path_folder_uploaded = Path(".").absolute() / "uploaded"
-        path_folder_uploaded.mkdir()
-        return path_folder_uploaded
+        folder_path_uploaded = Path(".").absolute() / "uploaded"
+        folder_path_uploaded.mkdir()
+        return folder_path_uploaded
 
 
 def get_list_chat_id(param_chat_id: str) -> list:
@@ -391,8 +391,8 @@ def main():
 
     # get config data
     folder_script_path = utils.get_folder_script_path()
-    path_file_config = os.path.join(folder_script_path, "config.ini")
-    config = utils.get_config_data(path_file_config)
+    file_path_config = os.path.join(folder_script_path, "config.ini")
+    config = utils.get_config_data(file_path_config)
     folder_path_start = config["folder_path_start"]
     file_size_limit_mb = int(config["file_size_limit_mb"])
     mode = config["mode"]
@@ -461,7 +461,6 @@ def main():
         )
 
         vidtool.clean_cmd()
-
         utils.move_project(folder_path_project, config)
 
 

@@ -37,7 +37,6 @@ from . import utils_timestamp
 
 
 def logging_config():
-
     logfilename = "log-" + "timestamp_link_maker" + ".txt"
     logging.basicConfig(
         filename=logfilename,
@@ -61,7 +60,6 @@ def include_timestamp(df):
     """
 
     def include_head_file_mark(df):
-
         df["head_file"] = ""
         for index, _ in df.iterrows():
             if index == 0:
@@ -85,7 +83,6 @@ def include_timestamp(df):
             if df.loc[index, "head_file"]:
                 pass
             else:
-
                 time_stamp = (
                     df.loc[index - 1, "duration"]
                     + df.loc[index - 1, "time_stamp"]
@@ -96,7 +93,6 @@ def include_timestamp(df):
 
 
 def timedelta_to_string(timestamp):
-
     timestamp_micro = datetime.timedelta(microseconds=timestamp.microseconds)
     timestamp = timestamp - timestamp_micro
     hou, min_full = divmod(timestamp.seconds, 3600)
@@ -122,7 +118,6 @@ def sequencer_file_repeated(df, column_name):
         return df
 
     def to_up_down(df, column_name, new_column, index, count):
-
         before = df.loc[index - 1, column_name]
         actual = df.loc[index, column_name]
         after = df.loc[index + 1, column_name]
@@ -138,7 +133,6 @@ def sequencer_file_repeated(df, column_name):
         return df, count
 
     def to_up(df, column_name, new_column, index, count):
-
         before = df.loc[index - 1, column_name]
         actual = df.loc[index, column_name]
         if before == actual:
@@ -168,7 +162,6 @@ def sequencer_file_repeated(df, column_name):
 
 
 def create_df_description_without_folder(df):
-
     # create column time_stamp_str
     df["time_stamp"] = pd.to_timedelta(df["time_stamp"], unit="D")
     df["time_stamp_str"] = df["time_stamp"].apply(timedelta_to_string)
@@ -213,7 +206,6 @@ def create_df_description_without_folder(df):
             if index2 == 0:
                 description = folder_name + " " + file_name_origin_seq
             else:
-
                 description = (
                     f"{description} \n "
                     + f"{folder_name} {file_name_origin_seq}"
@@ -331,7 +323,6 @@ def create_df_description_with_folder(df):
 
 
 def description_implant_hashtag_blocks(df, hashtag_index, add_num):
-
     df = df.reset_index(drop=True)
     for index, row in df.iterrows():
         description = row["description"]
@@ -346,7 +337,6 @@ def description_implant_hashtag_blocks(df, hashtag_index, add_num):
 
 def description_implant_signature_bottom(df):
     def get_description_bot_content():
-
         folder_script_path_relative = os.path.dirname(__file__)
         folder_script_path = os.path.realpath(folder_script_path_relative)
         file_path = os.path.join(folder_script_path, "description_bot.txt")
@@ -364,7 +354,6 @@ def description_implant_signature_bottom(df):
 
 
 def get_summary_mid_without_folder(df, keyword):
-
     size = df.shape[0]
     mid = ""
     for index in range(size):
@@ -426,7 +415,6 @@ def create_summary(
 
 
 def get_txt_content(file_path):
-
     list_encode = ["utf-8", "ISO-8859-1"]  # utf8, ansi
     for encode in list_encode:
         try:
@@ -444,7 +432,6 @@ def get_txt_content(file_path):
 
 
 def create_txt(file_path, stringa):
-
     f = open(file_path, "w", encoding="utf8")
     f.write(stringa)
     f.close()
@@ -532,10 +519,8 @@ def get_summary_mid_with_folder(
     def get_summary_mid_content_with_folders(
         list_file_output, dict_file_folders, start_index_number
     ):
-
         mid = ""
         for index, file_output in enumerate(list_file_output):
-
             list_folders = dict_file_folders[file_output]
 
             # for files in root folder.
@@ -571,7 +556,6 @@ def get_summary_mid_with_folder(
 
 
 def summary_compact(stringa):
-
     new_stringa = stringa.strip("\n").split("\n")
     d = {}
     for index, line in enumerate(new_stringa):
@@ -603,7 +587,6 @@ def remove_root_folders(df, skip_cols):
     """
 
     def check_col_unique_values(serie):
-
         serie_unique = serie.drop_duplicates(keep="first")
         list_unique_values = serie_unique.unique().tolist()
         qt_unique_values = len(list_unique_values)
@@ -647,7 +630,6 @@ def include_cols_folders_structure(df):
 
 def get_df_source(file_path_report_origin, list_columns_keep=None):
     def test_columns_video_details(df_source, list_columns_keep):
-
         # check if columns exists in dataframe
         list_known_items = df_source.columns
         return_test_unknown_items = utils_timestamp.test_unknown_items(
@@ -689,18 +671,18 @@ def get_df_source(file_path_report_origin, list_columns_keep=None):
     return df
 
 
-def get_duration_video(path_file):
+def get_duration_video(file_path):
     """using the ffmpeg lib, show the length of a video in seconds,
     excluding micro seconds
 
     Args:
-        path_file (str): absolite video file path
+        file_path (str): absolite video file path
 
     Returns:
         datetime: length of a video, excluding micro seconds
     """
 
-    duration_sec = get_length(path_file)
+    duration_sec = get_length(file_path)
     duration_delta = datetime.timedelta(seconds=duration_sec)
 
     # excluding micro seconds
@@ -776,7 +758,6 @@ def timestamp_link_maker(
     """
 
     def add_column_filepath(df):
-
         df["file_path"] = df[["file_path_folder", "file_name"]].apply(
             lambda row: Path(*row), axis=1
         )
@@ -856,16 +837,15 @@ def timestamp_link_maker(
 
 
 def main():
-
     # get dict config_data
     folder_script_path_relative = os.path.dirname(__file__)
     folder_script_path = os.path.realpath(folder_script_path_relative)
-    path_file_config = os.path.join(folder_script_path, "config.ini")
-    config_data = utils_timestamp.get_config_data(path_file_config)
+    file_path_config = os.path.join(folder_script_path, "config.ini")
+    config_data = utils_timestamp.get_config_data(file_path_config)
 
     # set variables
-    path_folder_output = config_data["path_folder_output"]
-    path_file_report = config_data["path_file_report"]
+    folder_path_output = config_data["path_folder_output"]
+    file_path_report = config_data["path_file_report"]
     path_summary_top = config_data["path_summary_top"]
     path_summary_bot = config_data["path_summary_bot"]
     start_index = int(config_data["start_index"])
@@ -882,12 +862,12 @@ def main():
     dict_summary["path_summary_bot"] = path_summary_bot
 
     # ensure folder_output existence
-    utils_timestamp.ensure_folder_existence([path_folder_output])
+    utils_timestamp.ensure_folder_existence([folder_path_output])
 
     # TODO: ensure aux files existence
     timestamp_link_maker(
-        path_folder_output,
-        path_file_report,
+        folder_path_output,
+        file_path_report,
         start_index,
         hashtag_index,
         dict_summary,

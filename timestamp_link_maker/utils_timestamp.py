@@ -22,7 +22,6 @@ def explode_parts_serie_path(path_serie: pd.Series) -> pd.DataFrame:
 
 
 def adapt_description_to_limit(df):
-
     list_index_warning = list(df["description"][~df["warning"].isna()].index)
     for index_warning in list_index_warning:
         desc_warning = df.loc[index_warning, "description"]
@@ -54,7 +53,6 @@ def trim_description_text(desc_warning):
 def trim_block_text(
     text_content, limit_len, len_preserv_right=15, hidden_symbol="..."
 ):
-
     if len(text_content) <= limit_len:
         return text_content
 
@@ -82,7 +80,6 @@ def trim_block_text(
 
 
 def trim_string(stringa, len_trim, len_preserv_right, hidden_symbol):
-
     len_stringa = len(stringa)
     sufix = stringa[-len_preserv_right:]
 
@@ -94,13 +91,11 @@ def trim_string(stringa, len_trim, len_preserv_right, hidden_symbol):
 
 
 def check_descriptions_warning(folder_path_project):
-
     df_description = get_df_description(folder_path_project)
     return check_descriptions_warning_from_df(df_description)
 
 
 def check_descriptions_warning_from_df(df):
-
     if "max size reached" in list(df["warning"].unique()):
         return True
     else:
@@ -108,9 +103,8 @@ def check_descriptions_warning_from_df(df):
 
 
 def get_df_description(folder_path_output):
-
-    path_file_description = os.path.join(folder_path_output, "upload_plan.csv")
-    df_desc = pd.read_csv(path_file_description)
+    file_path_description = os.path.join(folder_path_output, "upload_plan.csv")
+    df_desc = pd.read_csv(file_path_description)
     return df_desc
 
 
@@ -125,7 +119,7 @@ def ensure_folder_existence(folders_path):
             os.mkdir(folder_path)
 
 
-def get_config_data(path_file_config):
+def get_config_data(file_path_config):
     """get default configuration data from file config.ini
 
     Returns:
@@ -133,13 +127,12 @@ def get_config_data(path_file_config):
     """
 
     config_file = ConfigParser()
-    config_file.read(path_file_config)
+    config_file.read(file_path_config)
     default_config = dict(config_file["default"])
     return default_config
 
 
 def test_unknown_items(list_items, list_known_items, name_test):
-
     new_items = []
     for item in list_items:
         if item not in list_known_items and item == item:
@@ -155,15 +148,14 @@ def test_unknown_items(list_items, list_known_items, name_test):
         return True
 
 
-def test_file_close(path_file):
-
+def test_file_close(file_path):
     try:
-        file_obj = open(path_file, "r+")
+        file_obj = open(file_path, "r+")
         file_obj.closed
         return True
     except IOError:
         logging.error(
             "\nCould not open file! "
-            + f"Please close the file!\n{path_file}\n"
+            + f"Please close the file!\n{file_path}\n"
         )
         return False

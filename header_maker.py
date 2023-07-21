@@ -72,21 +72,21 @@ def get_project_name(folder_path_project: Path) -> str:
     return folder_path_project.stem.replace("_", " ")
 
 
-def get_list_video_details_path_file(path_dir, file_name):
-    list_path_file = []
+def get_list_video_details_file_path(folder_path, file_name):
+    list_file_path = []
 
-    for root, _, files in os.walk(path_dir):
+    for root, _, files in os.walk(folder_path):
         for file in files:
             if file == file_name:
-                list_path_file.append(os.path.join(root, file))
+                list_file_path.append(os.path.join(root, file))
 
-    return list_path_file
+    return list_file_path
 
 
-def get_dataframe_concat(list_video_details_path_file):
+def get_dataframe_concat(list_video_details_file_path):
     df = pd.DataFrame()
-    for video_details_path_file in list_video_details_path_file:
-        df_unique = pd.read_csv(video_details_path_file)
+    for video_details_file_path in list_video_details_file_path:
+        df_unique = pd.read_csv(video_details_file_path)
         df = pd.concat([df, df_unique], ignore_index=True)
     return df
 
@@ -112,18 +112,18 @@ def get_duration_filesize(df):
     return duration, file_size
 
 
-def header_maker(path_folder_output, folder_path_project):
+def header_maker(folder_path_output, folder_path_project):
     # main variables declaration
     file_name_video_details = "video_details.csv"
-    path_file_template_header = Path("user") / "header_template.txt"
+    file_path_template_header = Path("user") / "header_template.txt"
 
     # get list of video_files reports
-    list_video_details_path_file = get_list_video_details_path_file(
-        path_dir=path_folder_output, file_name=file_name_video_details
+    list_video_details_file_path = get_list_video_details_file_path(
+        folder_path=folder_path_output, file_name=file_name_video_details
     )
 
     # create dataframe unifieds
-    df = get_dataframe_concat(list_video_details_path_file)
+    df = get_dataframe_concat(list_video_details_file_path)
 
     # create variables
     duration, file_size = get_duration_filesize(df)
@@ -135,9 +135,9 @@ def header_maker(path_folder_output, folder_path_project):
     }
 
     # load template
-    file_path = os.path.join(path_folder_output, "header_project.txt")
+    file_path = os.path.join(folder_path_output, "header_project.txt")
     template_content = utils.get_txt_content(
-        file_path=path_file_template_header
+        file_path=file_path_template_header
     )
 
     # create output_content, replacing keys to values
