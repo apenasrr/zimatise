@@ -1,6 +1,6 @@
 import logging
-import os
 import time
+from pathlib import Path
 
 import vidtool
 
@@ -9,7 +9,6 @@ import zimatise_monitor
 
 
 def logging_config():
-
     logfilename = "log-" + "auto_report" + ".txt"
     logging.basicConfig(
         level=logging.DEBUG,
@@ -27,25 +26,22 @@ def logging_config():
 
 
 def show_projects_to_make_report(list_project_path):
-
     str_header = "AutoReport - Build a video metadata report\n"
     utils.show_projects_queue(str_header, list_project_path)
 
 
-def process_make_report(project_path):
-
+def process_make_report(project_path: Path):
     # define variables
     folder_script_path = utils.get_folder_script_path()
-    path_file_config = os.path.join(folder_script_path, "config.ini")
+    path_file_config = folder_script_path / "config.ini"
     config = utils.get_config_data(path_file_config)
     list_video_extensions = config["video_extensions"].split(",")
     folder_path_project_process = utils.get_folder_path_project_process(
         project_path
     )
 
-    file_path_report = os.path.join(
-        folder_path_project_process, "video_details.xlsx"
-    )
+    file_path_report = folder_path_project_process / "video_details.xlsx"
+
     try:
         vidtool.step_create_report_filled(
             project_path, file_path_report, list_video_extensions
@@ -58,7 +54,6 @@ def process_make_report(project_path):
 
 
 def main():
-
     # define flag to_report
     flag_rule = zimatise_monitor.get_flag_rule("to_report")
     file_path_monitor = zimatise_monitor.get_file_path_monitor()

@@ -6,13 +6,13 @@ import pandas as pd
 
 from . import utils
 
-script_path = os.path.realpath(__file__)
-script_folder_path = os.path.dirname(script_path)
+script_path = Path(__file__).absolute()
+script_folder_path = script_path.parent
 folder_timestamp_link_maker = (
-    Path(script_folder_path).parent / "timestamp_link_maker"
+    script_folder_path.parent / "timestamp_link_maker"
 )
 
-sys.path.append(folder_timestamp_link_maker)
+sys.path.append(str(folder_timestamp_link_maker))
 from timestamp_link_maker import timestamp_link_maker
 
 

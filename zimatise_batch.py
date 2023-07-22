@@ -38,6 +38,7 @@ import os
 import shutil
 import time
 from pathlib import Path
+from typing import List
 
 import vidtool
 import zipind
@@ -139,7 +140,7 @@ def send_to_moc(
         )
 
 
-def clean_temp_files(autodel_video_temp, folder_path_project):
+def clean_temp_files(autodel_video_temp, folder_path_project: Path):
     list_folder_name_to_delete = [
         "output_videos",
         "videos_encoded",
@@ -149,18 +150,16 @@ def clean_temp_files(autodel_video_temp, folder_path_project):
         return
 
     for folder_name_to_delete in list_folder_name_to_delete:
-        folder_path_to_delete = os.path.join(
-            folder_path_project, folder_name_to_delete
-        )
-        if os.path.exists(folder_path_to_delete):
-            shutil.rmtree(folder_path_to_delete, ignore_errors=True)
+        folder_path_to_delete = folder_path_project / folder_name_to_delete
+        if folder_path_to_delete.exists():
+            shutil.rmtree(str(folder_path_to_delete), ignore_errors=True)
         else:
             pass
 
 
 def run(
-    folder_path_project,
-    file_path_report,
+    folder_path_project: Path,
+    file_path_report: Path,
     list_video_extensions,
     file_size_limit_mb,
     duration_limit,
@@ -169,7 +168,7 @@ def run(
     hashtag_index,
     dict_summary,
     descriptions_auto_adapt,
-    path_summary_top,
+    path_summary_top: Path,
     document_hashtag,
     document_title,
     register_invite_link,
@@ -180,16 +179,16 @@ def run(
     autodel_video_temp,
 ):
     folder_path_project = vidtool.get_folder_path(folder_path_project)
-    folder_path_report = os.path.dirname(file_path_report)
-    print(f"Project: {Path(folder_path_project).name}\n\n")
-    folder_path_output = os.path.join(folder_path_report, "output_videos")
+    folder_path_report = file_path_report.parent
+    print(f"Project: {folder_path_project.name}\n\n")
+    folder_path_output = folder_path_report / "output_videos"
 
     ################################### p1
     utils.ensure_folder_existence([folder_path_output])
     zipind.zipind_core.run(
-        path_folder=folder_path_project,
+        path_folder=str(folder_path_project),
         mb_per_file=file_size_limit_mb,
-        path_folder_output=folder_path_output,
+        path_folder_output=str(folder_path_output),
         mode=mode,
         ignore_extensions=list_video_extensions,
     )
@@ -205,23 +204,25 @@ def run(
     folder_path_videos_encoded = vidtool.set_path_folder_videos_encoded(
         folder_path_project
     )
-    vidtool.ensure_folder_existence([folder_path_videos_encoded])
+    vidtool.ensure_folder_existence([str(folder_path_videos_encoded)])
 
     # reencode videos mark in column video_resolution_to_change
-    vidtool.set_make_reencode(file_path_report, folder_path_videos_encoded)
+    vidtool.set_make_reencode(
+        str(file_path_report), str(folder_path_videos_encoded)
+    )
 
     ################################### p4
     folder_path_videos_splitted = vidtool.set_path_folder_videos_splitted(
         folder_path_project
     )
 
-    vidtool.ensure_folder_existence([folder_path_videos_splitted])
+    vidtool.ensure_folder_existence([str(folder_path_videos_splitted)])
 
     folder_path_videos_joined = vidtool.set_path_folder_videos_joined(
         folder_path_project
     )
 
-    vidtool.ensure_folder_existence([folder_path_videos_joined])
+    vidtool.ensure_folder_existence([str(folder_path_videos_joined)])
 
     filename_output = vidtool.get_folder_name_normalized(folder_path_project)
 
@@ -229,29 +230,29 @@ def run(
         folder_path_project
     )
 
-    vidtool.ensure_folder_existence([folder_path_videos_cache])
+    vidtool.ensure_folder_existence([str(folder_path_videos_cache)])
 
     if reencode_plan == "group":
         # Fill group_column.
         #  Establishes separation criteria for the join videos step
-        vidtool.set_group_column(file_path_report)
+        vidtool.set_group_column(str(file_path_report))
 
     # split videos too big
     vidtool.set_split_videos(
-        file_path_report,
+        str(file_path_report),
         file_size_limit_mb,
-        folder_path_videos_splitted,
+        str(folder_path_videos_splitted),
         duration_limit,
     )
 
     if reencode_plan == "group":
         # join all videos
         vidtool.set_join_videos(
-            file_path_report,
+            str(file_path_report),
             file_size_limit_mb,
             filename_output,
-            folder_path_videos_joined,
-            folder_path_videos_cache,
+            str(folder_path_videos_joined),
+            str(folder_path_videos_cache),
             duration_limit,
             start_index,
             activate_transition,
@@ -309,7 +310,7 @@ def run(
     ################################### p6
 
     folder_script_path = utils.get_folder_script_path()
-    file_path_config = os.path.join(folder_script_path, "config.ini")
+    file_path_config = folder_script_path / "config.ini"
     config = utils.get_config_data(file_path_config)
     dict_config = config
 
@@ -335,15 +336,15 @@ def run(
     clean_temp_files(autodel_video_temp, folder_path_report)
 
 
-def get_list_project_path(root_folder_path):
-    list_folder_name = os.listdir(root_folder_path)
-    list_project_path = []
+def get_list_internal_folder_path(root_folder_path: Path) -> List[Path]:
+    list_folder_name = os.listdir(str(root_folder_path))
+    list_folder_path = []
     for folder_name in list_folder_name:
-        folder_path = os.path.join(root_folder_path, folder_name)
-        if not os.path.isdir(folder_path):
+        folder_path = Path(root_folder_path) / folder_name
+        if not folder_path.is_dir():
             continue
-        list_project_path.append(folder_path)
-    return list_project_path
+        list_folder_path.append(folder_path)
+    return list_folder_path
 
 
 def get_folder_path_uploaded(folder_path):
@@ -391,9 +392,9 @@ def main():
 
     # get config data
     folder_script_path = utils.get_folder_script_path()
-    file_path_config = os.path.join(folder_script_path, "config.ini")
+    file_path_config = Path(folder_script_path) / "config.ini"
     config = utils.get_config_data(file_path_config)
-    folder_path_start = config["folder_path_start"]
+    folder_path_start = Path(config["folder_path_start"])
     file_size_limit_mb = int(config["file_size_limit_mb"])
     mode = config["mode"]
     list_video_extensions = config["video_extensions"].split(",")
@@ -424,11 +425,11 @@ def main():
 
     file_path_report = None
     folder_path_project = None
-    utils.ensure_folder_existence(["projects"])
+    utils.ensure_folder_existence([Path("projects")])
 
     while True:
-        print("Monitoring folder: ", folder_path_start, "\n")
-        list_project_path = get_list_project_path(folder_path_start)
+        print("Monitoring folder: ", str(folder_path_start), "\n")
+        list_project_path = get_list_internal_folder_path(folder_path_start)
         if len(list_project_path) == 0:
             time.sleep(5)
             vidtool.clean_cmd()

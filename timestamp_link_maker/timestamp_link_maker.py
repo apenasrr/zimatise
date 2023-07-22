@@ -103,7 +103,7 @@ def timedelta_to_string(timestamp):
 
 
 def get_file_name_without_extension(file_name):
-    file_name_without_extension = os.path.splitext(file_name)[0]
+    file_name_without_extension = Path(file_name).stem
     return file_name_without_extension
 
 
@@ -337,9 +337,9 @@ def description_implant_hashtag_blocks(df, hashtag_index, add_num):
 
 def description_implant_signature_bottom(df):
     def get_description_bot_content():
-        folder_script_path_relative = os.path.dirname(__file__)
-        folder_script_path = os.path.realpath(folder_script_path_relative)
-        file_path = os.path.join(folder_script_path, "description_bot.txt")
+        folder_script_path_relative = Path(__file__).parent
+        folder_script_path = folder_script_path_relative.absolute()
+        file_path = folder_script_path / "description_bot.txt"
         description_bot_content = get_txt_content(file_path=file_path)
         return description_bot_content
 
@@ -366,8 +366,8 @@ def get_summary_mid_without_folder(df, keyword):
 
 
 def create_summary(
-    file_path_report_origin: str,
-    folder_path_output: str,
+    file_path_report_origin: Path,
+    folder_path_output: Path,
     start_index_number: int,
     dict_summary: dict = {},
     hashtag_index: str = "block",
@@ -375,8 +375,8 @@ def create_summary(
     """create summary.txt
 
     Args:
-        file_path_report_origin (str): absolute spreadsheet path.
-        folder_path_output (str): Absolute path of the folder where
+        file_path_report_origin (Path): absolute spreadsheet path.
+        folder_path_output (Path): Absolute path of the folder where
                                    the file will be generated
         start_index_number (int): Initial index number at which the video
                                    summary and description should start
@@ -410,7 +410,7 @@ def create_summary(
         + f"{summary_bot_content}"
     )
 
-    file_path = os.path.join(folder_path_output, "summary.txt")
+    file_path = folder_path_output / "summary.txt"
     create_txt(file_path=file_path, stringa=summary_content)
 
 
@@ -431,7 +431,7 @@ def get_txt_content(file_path):
     raise Exception("encode", f"Cannot open file: {file_path}")
 
 
-def create_txt(file_path, stringa):
+def create_txt(file_path: Path, stringa):
     f = open(file_path, "w", encoding="utf8")
     f.write(stringa)
     f.close()
@@ -722,8 +722,8 @@ def get_length(video_file_path):
 
 
 def timestamp_link_maker(
-    folder_path_output,
-    file_path_report_origin,
+    folder_path_output: Path,
+    file_path_report_origin: Path,
     start_index_number,
     hashtag_index: str = "Block",
     dict_summary={},
@@ -808,7 +808,7 @@ def timestamp_link_maker(
     df_description = description_implant_signature_bottom(df=df_description)
 
     # save upload_plan.csv
-    file_path_output = os.path.join(folder_path_output, "upload_plan.csv")
+    file_path_output = folder_path_output / "upload_plan.csv"
     df_description.to_csv(file_path_output, index=False)
 
     # Check if has warning
@@ -838,14 +838,14 @@ def timestamp_link_maker(
 
 def main():
     # get dict config_data
-    folder_script_path_relative = os.path.dirname(__file__)
-    folder_script_path = os.path.realpath(folder_script_path_relative)
-    file_path_config = os.path.join(folder_script_path, "config.ini")
+    folder_script_path_relative = Path(__file__).parent
+    folder_script_path = folder_script_path_relative.absolute()
+    file_path_config = folder_script_path / "config.ini"
     config_data = utils_timestamp.get_config_data(file_path_config)
 
     # set variables
-    folder_path_output = config_data["path_folder_output"]
-    file_path_report = config_data["path_file_report"]
+    folder_path_output = Path(config_data["path_folder_output"])
+    file_path_report = Path(config_data["path_file_report"])
     path_summary_top = config_data["path_summary_top"]
     path_summary_bot = config_data["path_summary_bot"]
     start_index = int(config_data["start_index"])

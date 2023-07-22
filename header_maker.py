@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import os
 from pathlib import Path
+from typing import List
 
 import pandas as pd
 
@@ -72,13 +73,15 @@ def get_project_name(folder_path_project: Path) -> str:
     return folder_path_project.stem.replace("_", " ")
 
 
-def get_list_video_details_file_path(folder_path, file_name):
+def get_list_video_details_file_path(
+    folder_path: Path, file_name
+) -> List[str]:
     list_file_path = []
 
-    for root, _, files in os.walk(folder_path):
+    for root, _, files in os.walk(str(folder_path)):
         for file in files:
             if file == file_name:
-                list_file_path.append(os.path.join(root, file))
+                list_file_path.append(str(Path(root) / file))
 
     return list_file_path
 
@@ -112,7 +115,7 @@ def get_duration_filesize(df):
     return duration, file_size
 
 
-def header_maker(folder_path_output, folder_path_project):
+def header_maker(folder_path_output: Path, folder_path_project: Path):
     # main variables declaration
     file_name_video_details = "video_details.csv"
     file_path_template_header = Path("user") / "header_template.txt"
@@ -135,7 +138,7 @@ def header_maker(folder_path_output, folder_path_project):
     }
 
     # load template
-    file_path = os.path.join(folder_path_output, "header_project.txt")
+    file_path = folder_path_output / "header_project.txt"
     template_content = utils.get_txt_content(
         file_path=file_path_template_header
     )

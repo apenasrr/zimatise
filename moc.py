@@ -68,14 +68,14 @@ def get_chat_invite_link(folder_path_project: str):
         )
 
 
-def get_header_content(folder_path_project: str):
+def get_header_content(folder_path_project: Path):
     """captures the content of the project header
 
     Args:
-        folder_path_project (str): Project Analysis Folder Path
+        folder_path_project (Path): Project Analysis Folder Path
     """
 
-    file_path_header = os.path.join(folder_path_project, "header_project.txt")
+    file_path_header = folder_path_project / "header_project.txt"
     header_content = get_txt_content(file_path_header)
     return header_content
 

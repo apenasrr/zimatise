@@ -142,8 +142,8 @@ def run_silent_mode(
 ):
     folder_path_project = vidtool.get_folder_path(folder_path_project)
     file_path_report = vidtool.set_path_file_report(folder_path_project)
-    folder_path_report = os.path.dirname(file_path_report)
-    folder_path_output = os.path.join(folder_path_report, "output_videos")
+    folder_path_report = file_path_report.parent
+    folder_path_output = folder_path_report / "output_videos"
 
     ################################### p1
     utils.ensure_folder_existence([folder_path_output])
@@ -296,7 +296,7 @@ def main():
 
     # get config data
     folder_script_path = utils.get_folder_script_path()
-    file_path_config = os.path.join(folder_script_path, "config.ini")
+    file_path_config = folder_script_path / "config.ini"
     config_data = utils.get_config_data(file_path_config)
     file_size_limit_mb = int(config_data["file_size_limit_mb"])
     mode = config_data["mode"]
@@ -331,7 +331,7 @@ def main():
     dict_summary["path_summary_bot"] = path_summary_bot
     file_path_report = None
     folder_path_project = None
-    utils.ensure_folder_existence(["projects"])
+    utils.ensure_folder_existence([Path("projects")])
 
     if silent_mode:
         while True:
@@ -371,9 +371,9 @@ def main():
             file_path_report = vidtool.set_path_file_report(
                 folder_path_project
             )
-            folder_path_report = os.path.dirname(file_path_report)
+            folder_path_report = file_path_report.parent
 
-            if os.path.isdir(folder_path_project) is False:
+            if not folder_path_project.exists():
                 input("\nThe folder does not exist.")
                 vidtool.clean_cmd()
                 continue
@@ -391,9 +391,7 @@ def main():
                 vidtool.clean_cmd()
                 continue
 
-            folder_path_output = os.path.join(
-                folder_path_report, "output_videos"
-            )
+            folder_path_output = folder_path_report / "output_videos"
             utils.ensure_folder_existence([folder_path_output])
             zipind.zipind_core.run(
                 path_folder=folder_path_project,
@@ -564,7 +562,7 @@ def main():
                 folder_path_project
             )
 
-            folder_path_report = os.path.dirname(file_path_report)
+            folder_path_report = file_path_report.parent
 
             if reencode_plan == "group":
                 # make descriptions.xlsx and summary.txt
@@ -630,7 +628,7 @@ def main():
                 folder_path_project
             )
 
-            folder_path_report = os.path.dirname(file_path_report)
+            folder_path_report = file_path_report.parent
 
             # Generate config_data dictionary from config_data
             #  in repo tgsender

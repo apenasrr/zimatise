@@ -1,5 +1,7 @@
 import os
 import shutil
+from pathlib import Path
+from typing import List
 
 import utils
 
@@ -20,9 +22,11 @@ def get_summary_text_docs(
 
 
 def get_summary_content_update(
-    folder_path_output, path_summary_top, str_summary_text_docs
-):
-    path_summary = os.path.join(folder_path_output, "summary.txt")
+    folder_path_output: Path,
+    path_summary_top: Path,
+    str_summary_text_docs: str,
+) -> str:
+    path_summary = folder_path_output / "summary.txt"
     summary_content = utils.get_txt_content(path_summary)
 
     summary_top_content = utils.get_txt_content(path_summary_top)
@@ -40,12 +44,12 @@ def get_summary_content_update(
     return summary_content_update
 
 
-def save_summary_updated(folder_path_output, summary_content_update):
+def save_summary_updated(
+    folder_path_output: Path, summary_content_update: str
+):
     # backup
-    file_path_summary = os.path.join(folder_path_output, "summary.txt")
-    file_path_summary_to = os.path.join(
-        folder_path_output, "summary-only_videos.txt"
-    )
+    file_path_summary = folder_path_output / "summary.txt"
+    file_path_summary_to = folder_path_output / "summary-only_videos.txt"
     shutil.copy(file_path_summary, file_path_summary_to)
 
     # save
@@ -54,8 +58,8 @@ def save_summary_updated(folder_path_output, summary_content_update):
 
 def summary_text_update_with_docs(
     count_file_path_zip,
-    path_summary_top,
-    folder_path_output,
+    path_summary_top: Path,
+    folder_path_output: Path,
     document_hashtag,
     document_title,
 ):

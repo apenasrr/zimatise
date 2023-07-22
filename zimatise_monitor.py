@@ -1,6 +1,7 @@
 import datetime
 import os
 import time
+from pathlib import Path
 
 import pandas as pd
 
@@ -8,7 +9,6 @@ import utils
 
 
 def create_monitor(file_name_monitor):
-
     list_columns_order = [
         "dt_start",
         "project_name",
@@ -31,34 +31,30 @@ def create_monitor(file_name_monitor):
 
 
 def ensure_exists_monitor(file_name_monitor):
-
-    exist = os.path.exists(file_name_monitor)
+    exist = Path(file_name_monitor).exists()
     if not exist:
         create_monitor(file_name_monitor)
 
 
 def check_folders_auth(list_folder_path):
-
     list_ = []
     for folder_path in list_folder_path:
-        folder_name = os.path.basename(folder_path)
+        folder_name = Path(folder_path).name
         if folder_name[0] == "_":
             list_.append(folder_path)
     return list_
 
 
-def get_list_folder_path_start_auth(folder_path_start):
-
-    exist = os.path.exists(folder_path_start)
-    if exist is False:
-        os.mkdir(folder_path_start)
+def get_list_folder_path_start_auth(folder_path_start: Path):
+    if folder_path_start.exists() is False:
+        folder_path_start.mkdir(exist_ok=True)
         return []
 
     list_folder_name = os.listdir(folder_path_start)
     list_folder_path = []
     for folder_name in list_folder_name:
-        folder_path = os.path.join(folder_path_start, folder_name)
-        list_folder_path.append(folder_path)
+        folder_path = folder_path_start / folder_name
+        list_folder_path.append(str(folder_path))
 
     list_folder_path_start_auth = check_folders_auth(list_folder_path)
     return list_folder_path_start_auth
@@ -82,11 +78,10 @@ def check_project_in_monitor(folder_path_project: str, file_path_monitor: str):
     return exist
 
 
-def add_project_in_monitor(folder_path_project, file_path_monitor):
-
+def add_project_in_monitor(folder_path_project: Path, file_path_monitor: Path):
     # set variables
     dt_start = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    folder_name_project_raw = os.path.basename(folder_path_project)
+    folder_name_project_raw = folder_path_project.name
     folder_name_project = folder_name_project_raw.strip("_")
 
     # open monitor report
@@ -116,7 +111,6 @@ def add_project_in_monitor(folder_path_project, file_path_monitor):
 
 
 def get_flag_rule(flag_name: str) -> dict:
-
     was_started = {"1_start_auth": 1}
     to_zip = {"1_start_auth": 1, "2_auto_zip": 0}
     to_report = {"1_start_auth": 1, "3_auto_report": 0}
@@ -140,7 +134,6 @@ def get_flag_rule(flag_name: str) -> dict:
 
 
 def process_flag_project(flag_rule: dict) -> bool:
-
     # load dataframe
     file_path_monitor = get_file_path_monitor()
     df = pd.read_csv(file_path_monitor)
@@ -158,7 +151,6 @@ def process_flag_project(flag_rule: dict) -> bool:
 
 
 def check_flag_project(folder_path_project, flag_name):
-
     dict_flag_rule = get_flag_rule(flag_name)
     dict_flag_rule["project_path"] = folder_path_project
     flag_status = process_flag_project(flag_rule=dict_flag_rule)
@@ -166,7 +158,6 @@ def check_flag_project(folder_path_project, flag_name):
 
 
 def check_unique_project_line(serie_boolean):
-
     count_found = sum(serie_boolean)
     if count_found != 1:
         raise ValueError("Multiple lines of the same project was found.")
@@ -174,10 +165,9 @@ def check_unique_project_line(serie_boolean):
         raise ValueError("No line of this project was found.")
 
 
-def set_stage_project(folder_path_project: str,
-                      stage_name: str,
-                      stage_value: int):
-
+def set_stage_project(
+    folder_path_project: str, stage_name: str, stage_value: int
+):
     # load dataframe
     file_path_monitor = get_file_path_monitor()
     df = pd.read_csv(file_path_monitor)
@@ -196,20 +186,19 @@ def set_stage_project(folder_path_project: str,
 
 
 def get_hit_max_path(return_test_max_path):
-
     test_approved = return_test_max_path["result"]
     hit_max_path = not test_approved
     return hit_max_path
 
 
 def get_list_file_path_long(return_test_max_path):
-
     list_file_path_long = return_test_max_path["list_file_path_long"]
     return list_file_path_long
 
 
-def ask_correct_or_jump(folder_path_project: str,
-                        list_file_path_long: list) -> bool:
+def ask_correct_or_jump(
+    folder_path_project: str, list_file_path_long: list
+) -> bool:
     """ask to test again or skip project
 
     Args:
@@ -243,16 +232,15 @@ def ask_correct_or_jump(folder_path_project: str,
         return choose_jump
 
 
-def set_project_as_unauth(folder_path_project):
-
-    folder_root = os.path.join(folder_path_project, "..")
-    folder_name = os.path.basename(folder_path_project)
+def set_project_as_unauth(folder_path_project: Path):
+    folder_root = folder_path_project.parent
+    folder_name = folder_path_project.name
     folder_name_unauth = folder_name.strip("_")
-    folder_path_unauth = os.path_join(folder_root, folder_name_unauth)
+    folder_path_unauth = folder_root / folder_name_unauth
     # rename folder to unauthorized
     while True:
         try:
-            os.rename(folder_path_project, folder_path_unauth)
+            folder_path_project.rename(folder_path_unauth)
             return
         except Exception as e:
             print(
@@ -263,7 +251,6 @@ def set_project_as_unauth(folder_path_project):
 
 
 def update_monitor(df):
-
     file_path_monitor = get_file_path_monitor()
     while True:
         try:
@@ -277,21 +264,22 @@ def update_monitor(df):
             input("Type [Enter] to try again.")
 
 
-def check_and_add_new_project(folder_path_project, file_path_monitor, max_path):
-
+def check_and_add_new_project(
+    folder_path_project, file_path_monitor, max_path
+):
     """
     Check if the project files respect MAX_PATH
     and authorize to start the process flow
     Details:
-	- Verifies if Project_Path is on the monitor
-		- if there is
-			- If project has already started, skip
+        - Verifies if Project_Path is on the monitor
+                - if there is
+                        - If project has already started, skip
             - If project has not started, make Max_Path tests
-				- if pass, mark to the next stage. 1_start_auth
-				- if dont, require fix or skip
+                                - if pass, mark to the next stage. 1_start_auth
+                                - if dont, require fix or skip
                     - if skip, unauthorizes project so that it is no longer
                         seen by the monitor
-		- If there is not have, add project on the monitor
+                - If there is not have, add project on the monitor
     """
 
     # verifica se folder_path contém no relatório
@@ -347,13 +335,11 @@ def check_and_add_new_project(folder_path_project, file_path_monitor, max_path):
 
 
 def get_file_path_monitor():
-
     file_path_monitor = "report_monitor.csv"
     return file_path_monitor
 
 
 def confirm_reencode_auth(folder_path_project):
-
     need_auth_to_reencode = check_flag_project(
         folder_path_project, flag_name="auth_encode"
     )
@@ -400,9 +386,8 @@ def ask_reencode_or_jump(folder_path_project: str) -> bool:
 
 
 def main():
-
     folder_script_path = utils.get_folder_script_path()
-    path_file_config = os.path.join(folder_script_path, "config.ini")
+    path_file_config = folder_script_path / "config.ini"
     config = utils.get_config_data(path_file_config)
     folder_path_start = config["folder_path_start"]
     max_path = int(config["max_path"])

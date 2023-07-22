@@ -90,7 +90,7 @@ def trim_string(stringa, len_trim, len_preserv_right, hidden_symbol):
     return line_trim
 
 
-def check_descriptions_warning(folder_path_project):
+def check_descriptions_warning(folder_path_project: Path):
     df_description = get_df_description(folder_path_project)
     return check_descriptions_warning_from_df(df_description)
 
@@ -102,8 +102,8 @@ def check_descriptions_warning_from_df(df):
         return False
 
 
-def get_df_description(folder_path_output):
-    file_path_description = os.path.join(folder_path_output, "upload_plan.csv")
+def get_df_description(folder_path_output: Path):
+    file_path_description = folder_path_output / "upload_plan.csv"
     df_desc = pd.read_csv(file_path_description)
     return df_desc
 
@@ -114,9 +114,7 @@ def ensure_folder_existence(folders_path):
     """
 
     for folder_path in folders_path:
-        existence = os.path.isdir(folder_path)
-        if existence is False:
-            os.mkdir(folder_path)
+        Path(folder_path).mkdir(exist_ok=True)
 
 
 def get_config_data(file_path_config):

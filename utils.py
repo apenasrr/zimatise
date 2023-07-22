@@ -3,45 +3,42 @@ import os
 import sys
 from configparser import ConfigParser
 from pathlib import Path
+from typing import List
 
 import pandas as pd
 import vidtool
 
 
-def move_project(folder_path_project, config_data):
+def move_project(folder_path_project: Path, config_data: dict):
     move_to_uploaded = config_data.get("move_to_uploaded", "0")
     folder_path_uploaded = config_data.get("folder_path_uploaded")
 
     if (
         not folder_path_uploaded
-        or not Path(folder_path_project).exists()
+        or not folder_path_project.exists()
         or move_to_uploaded == "0"
     ):
         return
 
-    project_path_uploaded = (
-        Path(folder_path_uploaded) / Path(folder_path_project).name
+    project_path_uploaded = folder_path_uploaded / folder_path_project.name
+    folder_path_project.rename(project_path_uploaded)
+
+    folder_path_auth = project_path_uploaded.parent / (
+        "_" + project_path_uploaded.name
     )
-    Path(folder_path_project).rename(project_path_uploaded)
-
-    folder_path_auth = Path(project_path_uploaded).parent / (
-        "_" + Path(project_path_uploaded).name
-    )
-    Path(project_path_uploaded).rename(folder_path_auth)
+    project_path_uploaded.rename(folder_path_auth)
 
 
-def add_path_script_folders(list_folders_name):
+def add_path_script_folders(list_folders_name: List[str]):
     list_repo_dont_found = []
     for folder_name in list_folders_name:
-        path_active_folder = os.path.dirname(os.path.realpath(__file__))
-        path_script_folder = os.path.abspath(
-            os.path.join(path_active_folder, "..", folder_name)
-        )
-        existence = os.path.isdir(path_script_folder)
-        if existence is False:
-            list_repo_dont_found.append(path_script_folder)
+        active_folder_path = Path(__file__).absolute().parent
+        script_folder_path = active_folder_path.parent / folder_name
+
+        if script_folder_path.exists():
+            sys.path.append(str(script_folder_path))
         else:
-            sys.path.append(path_script_folder)
+            list_repo_dont_found.append(str(script_folder_path))
 
     # alert in case of not found repositories
     qt_not_found = len(list_repo_dont_found)
@@ -59,13 +56,13 @@ def add_path_script_folders(list_folders_name):
         exit()
 
 
-def show_projects_queue(header, list_project_path):
+def show_projects_queue(header, list_project_path: List[Path]):
     print(header)
     if list_project_path[0] == "":
         print("Awaiting a new task...")
     else:
         for project_path in list_project_path:
-            folder_name = os.path.basename(project_path)
+            folder_name = project_path.name
             print(f"-{folder_name}")
         print("")
 
@@ -84,9 +81,9 @@ def get_list_project_to_process(file_path_monitor, flag_rule):
     return list_project_path_to_process
 
 
-def select_a_project_to_process(list_project_path):
+def select_a_project_to_process(list_project_path: List[str]):
     project_to_process = list_project_path[0]
-    return project_to_process
+    return Path(project_to_process)
 
 
 def serie_boolean_mult_list(list_serie_boolean):
@@ -131,28 +128,28 @@ def clean_cmd():
     os.system("cls")
 
 
-def get_folder_path_project_process(project_path):
-    folder_name_normalized = vidtool.get_folder_name_normalized(project_path)
+def get_folder_path_project_process(project_path: Path):
+    folder_name_normalized = vidtool.get_folder_name_normalized(
+        str(project_path)
+    )
 
     folder_path_output_relative = "output_" + folder_name_normalized.strip("_")
-    ensure_folder_existence(["projects"])
+    ensure_folder_existence([Path("projects")])
 
-    folder_path_project_process = os.path.join(
-        "projects", folder_path_output_relative
+    folder_path_project_process = (
+        Path("projects") / folder_path_output_relative
     )
     ensure_folder_existence([folder_path_project_process])
     return folder_path_project_process
 
 
-def get_folder_path_project_output(folder_path_project_process):
-    folder_path_project_output = os.path.join(
-        folder_path_project_process, "output_videos"
-    )
+def get_folder_path_project_output(folder_path_project_process: Path):
+    folder_path_project_output = folder_path_project_process / "output_videos"
     ensure_folder_existence([folder_path_project_output])
     return folder_path_project_output
 
 
-def test_folder_has_file_path_long(folder_path, max_path=260):
+def test_folder_has_file_path_long(folder_path: Path, max_path=260):
     """Test if a folder has any file with file_path too long
 
     Args:
@@ -165,12 +162,12 @@ def test_folder_has_file_path_long(folder_path, max_path=260):
     return_dict = {}
     return_dict["result"] = True
 
-    for root, _, files in os.walk(folder_path):
+    for root, _, files in os.walk(str(folder_path)):
         for file in files:
-            file_path = os.path.join(root, file)
-            len_file_path = len(file_path)
+            file_path = Path(root) / file
+            len_file_path = len(str(file_path))
             if len_file_path > max_path:
-                list_file_path_long.append(file_path)
+                list_file_path_long.append(str(file_path))
 
     if len(list_file_path_long) != 0:
         return_dict["result"] = False
@@ -179,7 +176,7 @@ def test_folder_has_file_path_long(folder_path, max_path=260):
     return return_dict
 
 
-def test_folders_has_path_long(list_folder_path, max_path=260):
+def test_folders_has_path_long(list_folder_path: List[Path], max_path=260):
     """tests a serie of folders if any of them has files whose pathfile
     has a larger length than stipulated in max_path
 
@@ -202,7 +199,7 @@ def test_folders_has_path_long(list_folder_path, max_path=260):
             folder_path, max_path
         )
         dict_folders_path = {}
-        dict_folders_path["folder_path"] = folder_path
+        dict_folders_path["folder_path"] = str(folder_path)
 
         dict_folders_path[
             "list_file_path_long"
@@ -217,14 +214,14 @@ def test_folders_has_path_long(list_folder_path, max_path=260):
     return result_test_max_path
 
 
-def get_folder_script_path():
-    folder_script_path_relative = os.path.dirname(__file__)
-    folder_script_path = os.path.realpath(folder_script_path_relative)
+def get_folder_script_path() -> Path:
+    folder_script_path_relative = Path(__file__).parent
+    folder_script_path = folder_script_path_relative.absolute()
 
     return folder_script_path
 
 
-def get_config_data(file_path_config):
+def get_config_data(file_path_config: Path):
     """get default configuration data from file config.ini
 
     Returns:
@@ -237,18 +234,16 @@ def get_config_data(file_path_config):
     return default_config
 
 
-def ensure_folder_existence(folders_path):
+def ensure_folder_existence(folders_path: List[Path]):
     """
-    :input: folders_path: List
+    :input: folders_path: List[Path]
     """
 
     for folder_path in folders_path:
-        existence = os.path.isdir(folder_path)
-        if existence is False:
-            os.mkdir(folder_path)
+        folder_path.mkdir(exist_ok=True)
 
 
-def get_txt_content(file_path):
+def get_txt_content(file_path: Path):
     list_encode = ["utf-8-sig", "ISO-8859-1"]  # utf8, ansi
     for encode in list_encode:
         try:
@@ -262,10 +257,10 @@ def get_txt_content(file_path):
 
     file = open(file_path, "r", encoding=encode)
     file_content = file.readlines()
-    raise Exception("encode", f"Cannot open file: {file_path}")
+    raise Exception("encode", f"Cannot open file: {str(file_path)}")
 
 
-def create_txt(file_path, stringa):
+def create_txt(file_path: Path, stringa: str):
     f = open(file_path, "w", encoding="utf8")
     f.write(stringa)
     f.close()

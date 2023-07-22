@@ -1,6 +1,7 @@
 import asyncio
 import os
 import time
+from pathlib import Path
 
 import tgsender
 import vidtool
@@ -8,11 +9,9 @@ import vidtool
 import utils
 
 
-def get_chat_id(folder_path_summary):
-    file_path_metadata = os.path.realpath(
-        os.path.join(folder_path_summary, "channel_metadata")
-    )
-    if os.path.exists(file_path_metadata):
+def get_chat_id(folder_path_summary: Path):
+    file_path_metadata = (folder_path_summary / "channel_metadata").absolute()
+    if file_path_metadata.exists():
         dict_metadata = eval(utils.get_txt_content(file_path_metadata))
         chat_id = dict_metadata["chat_id"]
     else:
@@ -106,8 +105,8 @@ def send_summary(chat_id, summary_content):
     return first_message_id
 
 
-def get_summary_content(folder_path_summary):
-    file_path_summary = os.path.join(folder_path_summary, "summary.txt")
+def get_summary_content(folder_path_summary: Path) -> str:
+    file_path_summary = folder_path_summary / "summary.txt"
     summary_content = utils.get_txt_content(file_path_summary)
     return summary_content
 
@@ -116,11 +115,11 @@ def pin_summary_post(chat_id, summary_post_id):
     asyncio.run(tgsender.api_async.pin_chat_message(chat_id, summary_post_id))
 
 
-def run(folder_path_summary):
+def run(folder_path_summary: Path):
     """Post and Pin the summary content
 
     Args:
-        folder_path_summary (str): folder path of the summary file
+        folder_path_summary (Path): folder path of the summary file
     """
 
     summary_content = get_summary_content(folder_path_summary)
@@ -130,9 +129,9 @@ def run(folder_path_summary):
     pin_summary_post(chat_id, summary_post_id)
 
 
-def main(folder_path_project):
+def main(folder_path_project: Path):
     file_path_report = vidtool.set_path_file_report(folder_path_project)
-    folder_path_report = os.path.dirname(file_path_report)
+    folder_path_report = file_path_report.parent
 
     run(folder_path_report)
 

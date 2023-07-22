@@ -1,5 +1,4 @@
 import logging
-import os
 import time
 
 import zipind
@@ -9,7 +8,6 @@ import zimatise_monitor
 
 
 def logging_config():
-
     logfilename = "log-" + "auto_zip" + ".txt"
     logging.basicConfig(
         level=logging.DEBUG,
@@ -27,10 +25,9 @@ def logging_config():
 
 
 def process_zipind(project_path):
-
     # define variables
     folder_script_path = utils.get_folder_script_path()
-    path_file_config = os.path.join(folder_script_path, "config.ini")
+    path_file_config = folder_script_path / "config.ini"
     config = utils.get_config_data(path_file_config)
     file_size_limit_mb = int(config["file_size_limit_mb"])
     mode = config["mode"]
@@ -44,9 +41,9 @@ def process_zipind(project_path):
 
     try:
         zipind.zipind_core.run(
-            path_dir=project_path,
+            path_folder=project_path,
             mb_per_file=file_size_limit_mb,
-            path_dir_output=folder_path_project_output,
+            path_folder_output=folder_path_project_output,
             mode=mode,
             ignore_extensions=list_video_extensions,
         )
@@ -57,7 +54,6 @@ def process_zipind(project_path):
 
 
 def show_projects_to_zip(list_project_path):
-
     str_header = (
         "Zipind - From a folder, "
         + "make a splited ZIP with INDependent parts\n"
@@ -66,7 +62,6 @@ def show_projects_to_zip(list_project_path):
 
 
 def main():
-
     # define flag to_zip
     # # 1_start_auth=1, 2_auto_zip=0
     flag_rule = zimatise_monitor.get_flag_rule("to_zip")

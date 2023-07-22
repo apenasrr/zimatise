@@ -1,6 +1,6 @@
 import logging
-import os
 import time
+from pathlib import Path
 
 import vidtool
 
@@ -9,7 +9,6 @@ import zimatise_monitor
 
 
 def logging_config():
-
     logfilename = "log-" + "auto_report" + ".txt"
     logging.basicConfig(
         level=logging.DEBUG,
@@ -27,23 +26,17 @@ def logging_config():
 
 
 def show_projects_to_reencode(list_project_path):
-
     str_header = "AutoReencode - Reencode videos from report plan\n"
     utils.show_projects_queue(str_header, list_project_path)
 
 
-def process_auto_reencode(project_path):
-
+def process_auto_reencode(project_path: Path):
     # define variables
     folder_path_project_process = utils.get_folder_path_project_process(
         project_path
     )
-    file_path_report = os.path.join(
-        folder_path_project_process, "video_details.xlsx"
-    )
-    folder_path_videos_encoded = os.path.join(
-        folder_path_project_process, "videos_encoded"
-    )
+    file_path_report = folder_path_project_process / "video_details.xlsx"
+    folder_path_videos_encoded = folder_path_project_process / "videos_encoded"
     utils.ensure_folder_existence([folder_path_videos_encoded])
 
     try:
@@ -56,7 +49,6 @@ def process_auto_reencode(project_path):
 
 
 def main():
-
     # define flag to_report
     flag_rule = zimatise_monitor.get_flag_rule("to_encode")
     file_path_monitor = zimatise_monitor.get_file_path_monitor()
