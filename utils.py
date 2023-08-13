@@ -11,7 +11,7 @@ import vidtool
 
 def move_project(folder_path_project: Path, config_data: dict):
     move_to_uploaded = config_data.get("move_to_uploaded", "0")
-    folder_path_uploaded = config_data.get("folder_path_uploaded")
+    folder_path_uploaded = Path(config_data.get("folder_path_uploaded"))
 
     if (
         not folder_path_uploaded
