@@ -16,21 +16,19 @@
     -https://github.com/apenasrr/vidtool
     -https://github.com/apenasrr/tgsender
 
-    ## How to use
-    - Update the libs through the 'update_libs.bat' file
-    - Run the zimatise_one.py file
+    ## How to use (for windows users)
+    - Enter the 'zimatise' folder
+    - Execute `_install.bat` to create the virtual environment and install the dependencies
+    - Run the file `zimatise_one.bat`
     - Follow the on-screen instructions
-    - For more details, check the repository
 
-    Do you wish to buy a coffee to say thanks?
-    LBC (from LBRY) digital Wallet
-    > bFmGgebff4kRfo5pXUTZrhAL3zW2GXwJSX
 
     We recommend:
     mises.org - Educate yourself about economic and political freedom
     lbry.tv - Store files and videos on blockchain ensuring free speech
     https://www.activism.net/cypherpunk/manifesto.html -  How encryption is essential to Free Speech and Privacy
 """
+
 from __future__ import annotations
 
 import logging
