@@ -352,7 +352,8 @@ def get_list_chat_id(param_chat_id: str) -> list:
     """Converts string parameter with 1 or more chat_id to chat_id list
 
     Args:
-        param_chat_id (str): parameter with 1 or more chat_id separated by comma
+        param_chat_id (str): parameter with 1 or more chat_id separated by
+        comma
 
     Raises:
         Exception: If the chat_id is invalid because it is not numerical
@@ -374,12 +375,7 @@ def get_list_chat_id(param_chat_id: str) -> list:
 def main():
     """
     How to use
-    -Place the folder of the 4 required repositories and this repository in
-    the same location. Then there must be 5 folders in the same location
-    -Enter the 'zimatise' folder and run the zimatise.py file
-    -Follow the on-screen instructions
-    -For more details, check the documentation for the required repositories
-    Source: https://github.com/apenasrr/zimatise
+    Checkout the repo: https://github.com/apenasrr/zimatise
     """
 
     # get config data
