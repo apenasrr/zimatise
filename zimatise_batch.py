@@ -335,14 +335,8 @@ def run(
 
 
 def get_list_internal_folder_path(root_folder_path: Path) -> List[Path]:
-    list_folder_name = os.listdir(str(root_folder_path))
-    list_folder_path = []
-    for folder_name in list_folder_name:
-        folder_path = Path(root_folder_path) / folder_name
-        if not folder_path.is_dir():
-            continue
-        list_folder_path.append(folder_path)
-    return list_folder_path
+
+    return [x for x in root_folder_path.iterdir() if x.is_dir()]
 
 
 def get_folder_path_uploaded(folder_path):
