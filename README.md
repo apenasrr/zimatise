@@ -24,16 +24,13 @@ into an:\
 Yes, in 60 seconds of setup\
 and highly customizable
 
-## How to use
-- Enter the 'zimatise' folder and
-- Execute `pip install -r requirements.txt` or run update_libs.bat
-- Run the file zimatise_one.py\
-- Follow the on-screen instructions\
+## How to use (for windows users)
+- Enter the 'zimatise' folder
+- Execute `_install.bat` to create the virtual environment and install the dependencies
+- Run the file `zimatise_one.bat`
+- Follow the on-screen instructions
 
 ---
-Do you wish to buy a coffee to say thanks?
-LBC (from LBRY) digital Wallet
-> bFmGgebff4kRfo5pXUTZrhAL3zW2GXwJSX
 
 ### We recommend:
 [mises.org](https://mises.org/) - Educate yourself about economic and political freedom\
