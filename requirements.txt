@@ -5,7 +5,7 @@ openpyxl
 pandas
 pyautogui
 pyperclip
-pyrogram
+pyrofork
 tgcrypto
 unidecode
 tgsender
