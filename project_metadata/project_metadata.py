@@ -7,7 +7,7 @@ def get_dict_metadata(folder_path_report):
     channel_metadata_path = Path(folder_path_report) / "channel_metadata"
     if not channel_metadata_path.exists():
         return None
-    with open(channel_metadata_path) as f:
+    with open(channel_metadata_path, encoding="utf-8") as f:
         list_content = f.readlines()
         str_content = "".join(list_content)
         dict_metadata = eval(str_content)
@@ -19,13 +19,13 @@ def update_project_config(project_config_path, dict_data):
 
     if project_config_path.exists():
         # update .config file
-        with open(project_config_path, "r") as f:
+        with open(project_config_path, "r", encoding="utf-8") as f:
             project_metadata = json.load(f)
             project_metadata.update(dict_data)
     else:
         project_metadata = dict_data
 
-    with open(project_config_path, "w") as f:
+    with open(project_config_path, "w", encoding="utf-8") as f:
         json.dump(project_metadata, f)
 
 

@@ -148,7 +148,7 @@ def test_unknown_items(list_items, list_known_items, name_test):
 
 def test_file_close(file_path):
     try:
-        file_obj = open(file_path, "r+")
+        file_obj = open(file_path, "r+", encoding="utf-8")
         file_obj.closed
         return True
     except IOError:
